@@ -1,3 +1,9 @@
+import {
+  WebsiteRoute,
+  EventsRoute,
+  GuestRoute,
+  PreviewRoute,
+} from './WebsiteRoutes.js';
 import { TeamPage } from '../features/access/TeamPage.js';
 import { RecoveryPage } from '../features/access/RecoveryPage.js';
 import { LinkPage } from '../features/access/LinkPage.js';
@@ -46,5 +52,30 @@ export const router = createBrowserRouter([
   { path: '/forgot-password', element: <RecoveryPage /> },
   { path: '/reset-password', element: <LinkPage /> },
   { path: '/accept-invitation', element: <LinkPage manager /> },
+  {
+    path: '/website',
+    element: (
+      <AccessGate>
+        <WebsiteRoute />
+      </AccessGate>
+    ),
+  },
+  {
+    path: '/events',
+    element: (
+      <AccessGate>
+        <EventsRoute />
+      </AccessGate>
+    ),
+  },
+  {
+    path: '/website/preview',
+    element: (
+      <AccessGate>
+        <PreviewRoute />
+      </AccessGate>
+    ),
+  },
+  { path: '/w/:slug', element: <GuestRoute /> },
   { path: '*', element: <NotFoundPage /> },
 ]);

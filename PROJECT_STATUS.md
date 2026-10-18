@@ -6,11 +6,11 @@ This is the living entry point for a new contributor. It records actual implemen
 
 ## Current milestone
 
-**M2 implemented: Manager invitations, team access and password recovery, with durable auth-email processing. Real Atlas checks and the development migration passed; controlled Resend acceptance is pending.**
+**M3 implemented and verified locally with Atlas; QA publication-return cache fix implemented. M2 is pushed; owner walkthroughs, staging/production and controlled Resend acceptance remain pending.**
 
 The owner approved authentication and then M2 implementation on 18 October 2026. Registration creates one draft wedding and its sole Admin atomically, signs in, and opens a protected dashboard showing real account/wedding details. `/login`, `/signup` and `/dashboard` are available. The private query cache is cleared on logout/account changes, and sessions are restored after refresh.
 
-See [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 behaviour, configuration and acceptance limits; [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) records the first slice, [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) records the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
+See [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md) for M3 behaviour/scope and [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 configuration/acceptance limits; [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) records the first slice, [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) records the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
 
 ## Confirmed architecture and product decisions
 
@@ -30,22 +30,22 @@ See [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 behaviour, configuration and a
 
 ## Implementation tracker
 
-| Workstream                       | State                     | What exists / what remains                                                                                                            |
-| -------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Workspace/build configuration    | Complete                  | Three packages, explicit shared exports and build-before-consumption scripts                                                          |
-| Frontend foundation              | Complete                  | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                       |
-| Backend foundation               | Complete                  | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                            |
-| Shared contracts                 | Complete                  | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                       |
-| Tests and checks                 | M2 Atlas checks passed    | 76 credential-free tests; 10 real Atlas integration tests; 2 Atlas-backed browser journeys passed; full root check passed             |
-| Atlas application connectivity   | Verified                  | After owner updated network access: real integration/browser checks passed; development readiness returned ready                      |
-| Database schema/migrations/seeds | M2 applied to development | Explicit 001/002 migrations completed in verified development database; no user or wedding seeded                                     |
-| Authentication and team          | M2 Atlas verified         | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain |
-| Wedding website/events/themes    | Not implemented           | No business endpoints, publication flow, polling or final themes                                                                      |
-| Invitations/estimates            | Not implemented           | No RSVP in version-one scope                                                                                                          |
-| Expenses/tasks                   | Not implemented           | Exact money, revisions and wedding isolation required when built                                                                      |
-| Photos/moderation/exports/jobs   | Not implemented           | Full lifecycle and expiry protection required before enabling                                                                         |
-| Vendors/streaming                | Not implemented           | Google Places discovery and YouTube embedding later                                                                                   |
-| Deployment                       | Not configured            | Hosting, production Atlas/S3/email and operational policies pending                                                                   |
+| Workstream                       | State                     | What exists / what remains                                                                                                                 |
+| -------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Workspace/build configuration    | Complete                  | Three packages, explicit shared exports and build-before-consumption scripts                                                               |
+| Frontend foundation              | Complete                  | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                            |
+| Backend foundation               | Complete                  | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                                 |
+| Shared contracts                 | Complete                  | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                            |
+| Tests and checks                 | M3 checks passed          | Latest root check: 101 tests across 15 files plus formatting/lint/types/build; prior 15 Atlas tests and three Atlas journeys passed        |
+| Atlas application connectivity   | Verified                  | After owner updated network access: real integration/browser checks passed; development readiness returned ready                           |
+| Database schema/migrations/seeds | M3 applied to development | Explicit 001/002/003 migrations completed in verified development database; no business data seeded                                        |
+| Authentication and team          | M2 Atlas verified         | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain      |
+| Wedding website/events/themes    | M3 Atlas verified         | Settings, event edits/archive, announcement, private preview, publish/unpublish, three themes, live guest refresh and safe social metadata |
+| Invitations/estimates            | Not implemented           | No RSVP in version-one scope                                                                                                               |
+| Expenses/tasks                   | Not implemented           | Exact money, revisions and wedding isolation required when built                                                                           |
+| Photos/moderation/exports/jobs   | Not implemented           | Full lifecycle and expiry protection required before enabling                                                                              |
+| Vendors/streaming                | Not implemented           | Google Places discovery and YouTube embedding later                                                                                        |
+| Deployment                       | Not configured            | Hosting, production Atlas/S3/email and operational policies pending                                                                        |
 
 ## Latest authentication verification
 
@@ -85,6 +85,25 @@ The later network-repair recheck below supersedes the initial Atlas blocker. Nex
 - Verified the migration target was development and the expected development database, then `npm run db:migrate` successfully applied 001/002 as needed. The runner reported completion without seeding wedding/user records. Existing development services and records were preserved.
 - Final `npm run check` after the selector/documentation update passed: formatting, zero-warning lint, all package/root types, 76 tests across 12 files and production build. `git diff --check` also passed.
 - No live Resend message, production migration/deployment, Git commit or push was performed. Provider acceptance/delivery and staging production-cookie/proxy behaviour remain unverified; local outbox success is not Resend verification.
+
+## M3 verification and limits
+
+Implemented on feature/wedding-website-events after M2 commit `27d396a` was pushed to origin/develop. New team routes are `/website`, `/events` and `/website/preview`; the published guest route is `/w/:slug`. Both team roles can edit operational content. No real development wedding was published or populated by the tests.
+
+- `npm run check` passed: formatting, zero-warning lint, root/package types, 100 credential-free tests across 15 files and production build. The initial new-screen bundle warning was resolved by loading M3 routes separately; the final build has no oversized-chunk warning.
+- `npm run test:integration` passed all 15 tests across three real Atlas suites. New coverage includes migration 003/indexes/validation, private drafts, publication/unpublication, competing revisions, transactional rollback after audit failure, archive-reference protection, wrong-wedding denial and Manager/disabled-account authority. Temporary databases were cleaned up.
+- `npm run test:e2e` passed all three real Atlas journeys. M3 covers ceremony creation, saved preview, publication, theme changes with stable content/links, phone/map actions, mobile overflow, live manual status and a guest announcement received through automatic refresh, escaped HTML metadata, and unpublication. The website-only journey passed again after the final lazy-route/unavailable-page refinements, including a friendly unavailable screen after unpublication and an automatic announcement update within the 30-second browser assertion. Awaited database/outbox cleanup completed.
+- Reviewed desktop website settings/private preview and all three mobile guest-theme screenshots with synthetic data. The final desktop ceremony-editor screenshot was also visually reviewed. Earlier in development, a refined Zod response schema and an ambiguous duplicate ceremony-heading selector were corrected; resolved test failures are not external-service failures.
+- Verified the migration target was the expected development database, then `npm run db:migrate` completed 001/002/003 as needed. No wedding/user/event records were seeded. After the last build/watch restart settled, direct development readiness returned ready and the proxied ceremonies API denied anonymous access with 401.
+- Managed covers remain decorative fallbacks until M6; streaming configuration remains null until M7. Families/invitations, tasks/expenses, photos, vendor discovery and real email delivery are not enabled by M3. Full small wedding schedules are returned, with no-more-pages metadata, instead of silently truncating ceremonies.
+- Main-date/timezone edits preserve the existing retention anchor, increment retentionVersion when expiry changes and reject access extension after cleanup may have started. Event instants stay fixed across timezone changes; published slugs stay fixed even after unpublication. Drafts remain private; public nested fields are whitelisted and unmanaged cover references never leak.
+- Owner review, Resend delivery, HTTPS/proxy/cookie staging acceptance, CI/hosting and backup/restore rehearsal remain pending. No production deployment or real message has been performed. The owner authorised the M3 GitHub Desktop commit/push checkpoint below; M2's pushed checkpoint remains intact.
+
+QA follow-up on 18 October: publishing from Preview now seeds the settings cache with the acknowledged wedding status/revision before returning. This prevents the cached draft from initializing a stale editor while its background GET runs. Mounted editors still retain their original revision and unsaved text for genuine conflict detection; explicit reload discards local edits. QA reported that the deliberate two-tab conflict retained text and explicit reload recovered it. Theme/team/recovery QA remains in progress. The new route regression reproduced the bug before the fix and passes afterward; the full root check passed all 101 tests, formatting/lint/types/build. This fix has no new Atlas/provider verification.
+
+Independent manual QA follow-up: the owner's publication fix passed against the rebuilt frontend and isolated real Atlas persistence. Preview → publish → settings immediately showed Published, and saving an edit without reloading succeeded and appeared on the guest route. A genuine two-tab stale edit still failed safely and retained its text. The targeted website component command passed seven tests, including the pending-background-GET regression; root build passed. Broader M2/M3 manual checks and 19 supplementary HTTP scenarios are detailed in [MANUAL_M2_M3_QA.md](./MANUAL_M2_M3_QA.md), with coverage limits distinguished from historical suite results. The exact temporary database/outbox were removed. Mobile override remained ineffective; Resend/production verification is still pending.
+
+Next: remaining minor validation/guard wording, mobile/focus-return QA and controlled staging/provider acceptance, then M4 family records, selected-event personal links, manual sharing and unique-family estimates; reconcile email-batch semantics before enabling real family dispatch.
 
 ## Historical scaffold verification record
 
@@ -131,7 +150,7 @@ The detailed plan is now [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). The
 1. Owner reviews the completed auth slice locally and handles staging setup: stable CSRF secret, HTTPS origin/proxy trust, explicit migration, then the signup/login/logout smoke journey. Prepare CI separately.
 2. Complete M2 provider acceptance: configure the Resend sender with controlled staging recipients. Atlas integration/default browser checks and the development migration have passed.
 3. Review Manager setup/recovery and durable email behaviour over the real staging HTTPS origin; code/local substitute checks alone do not verify external services.
-4. Build guest website/events, publication and all three themes; add family links, estimates and team-reviewed daily invitation batches for the proposed 16 November release.
+4. M3 guest website/events/publication/themes are implemented. Next, agree M4 details and add family links/estimates/manual sharing; controlled email dispatch needs the outstanding provider/batch acceptance.
 5. Add expenses and tasks, followed by the complete private photo/moderation/export/retention lifecycle.
 6. Add streaming and vendor discovery; complete every version-one pilot scenario before the full release.
 7. Stabilise before the hypothetical wedding, monitor during it and verify post-wedding cleanup. Target dates are conditional on capacity and acceptance checks, not guarantees.
@@ -261,6 +280,47 @@ The sequence is a roadmap, not a claim that these features exist. Agree detailed
 - Owner deferred personal feature review and authorised committing/pushing the completed changes, then starting M3. This is not owner acceptance of the deferred UI walkthrough or live Resend delivery.
 - Reviewed the intended working-tree files, kept private environment/outbox/build artifacts excluded, and retained the manual auth QA notes. The latest full root check, 10 real Atlas tests and two Atlas browser journeys remain the validation evidence for this checkpoint.
 - Next: checkpoint M2 on develop, then implement wedding content, ceremonies, private preview/publication and three existing theme variants on a feature branch. No production deployment is included.
+
+### 18 October 2026 — M2 pushed; M3 implementation underway
+
+- Created M2 commit `27d396a` and pushed it to origin/develop through GitHub Desktop after terminal HTTPS authentication was unavailable. Verified local HEAD and origin/develop matched. Private environment/outbox/build files and reference designs were excluded.
+- Created feature/wedding-website-events from that checkpoint. Owner explicitly asked to proceed while deferring personal M2 review; no live Resend acceptance is inferred.
+- Added in-progress wedding/event contracts, migration 003, transactional wedding/event mutations, public projections, revision/retention guards, settings/ceremony editors, private preview/publication, three guest theme presentations, 25-second refresh and escaped HTML metadata. Managed covers remain decorative fallbacks until the photo lifecycle milestone; streams remain M7.
+- Initial types/lint passed after interface alignment. Runtime tests found a refined-schema response construction issue; corrected the public event projection schema. New HTTP/schema/UI/Atlas/browser checks are in progress; M3 is not yet a completed or deployed milestone.
+- Next: finish validation, address failures, review responsive screens, apply the development migration only after real Atlas tests pass, and document actual acceptance results.
+
+### 18 October 2026 — M3 website/events implemented and Atlas verified
+
+- Added wedding/event contracts, explicit migration 003, transactionally revisioned wedding/event/audit changes, public projection/retention/slug guards and reference-aware archiving. Admin and Manager permissions and wedding isolation are preserved.
+- Added accessible settings/ceremony editors, a private saved preview and explicit publication/unpublication. Built Traditional/Floral/Minimal guest presentations sharing one model, manual status/today/upcoming views, 25-second/focus refresh, announcements, map/call actions and escaped published HTML metadata. Unpublished page responses use a generic shell without wedding metadata; no private data enters public projections.
+- Reused pinned Luxon in the frontend for wedding-timezone inputs, with explicit DST-gap/ambiguity errors. Split M3 routes to keep the initial bundle small. Retained decorative covers and null streams until their lifecycle milestones.
+- Verification: final root check passed all 100 tests plus formatting/zero-warning lint/types/build; all 15 real Atlas integration tests and three Atlas browser journeys passed. Reviewed desktop settings/preview and all three mobile guest themes. The final targeted Atlas browser rerun also passed; its desktop ceremony editor screenshot was reviewed. Development readiness returned ready after the build/watch restart; anonymous proxied event access was denied with 401.
+- Applied tested migrations through the root command to the verified development database; no business data was seeded. Preserved M2 owner-review/Resend limits, manual QA notes, private config/outbox exclusions and reference designs. M3 remains local to the feature branch, with no production release or M3 commit/push.
+- Updated README, API/database notes and WEBSITE_IMPLEMENTATION.md. Next: owner review and staging/provider prerequisites, then M4 family invitation work.
+
+### 18 October 2026 — QA publication-return revision fix
+
+- QA reported settings still showing “Draft · private” after publication, followed by a false revision conflict; explicit reload recovered it. QA also confirmed intentional two-tab conflicts retained unsaved text. Themes/team/recovery acceptance is still underway.
+- Preview now cancels any in-flight settings read and caches the successful publication response before invalidation/navigation. The settings editor starts from the acknowledged status/revision; background updates still do not silently replace unsaved edits or bypass genuine revision checks.
+- Added a route-level regression with a delayed settings GET (failed before the fix, passed after) and browser assertions for returning through the settings link, saving after publication, two-tab conflict text retention and explicit reload recovery.
+- Verification: client suite passed 20 tests; final root `npm run check` passed all 101 tests across 15 files, formatting, zero-warning lint, types and production build. An initial test fixture omitted the required request ID; corrected before the successful full check.
+- Browser verification: the website journey passed against built assets with in-memory test stores, including post-publication status/save, two-tab conflict text retention/reload, three themes, live updates and unpublication. The sandbox initially blocked the test-server socket; the usual port 3101 was already occupied, so an isolated temporary configuration used port 3102. Temporary files/outbox were cleaned up and the existing QA server was preserved. This run does not verify Atlas or real email.
+- No permissions, wedding isolation, retention or scope change. No real email, development migration, deployment, commit or push. Next: owner retests the fixed flow and completes themes/team/recovery QA.
+
+### 18 October 2026 — Manual M2/M3 QA and publication-fix regression verified
+
+- Tested current local feature-branch work through the existing isolated Atlas/browser server and private temporary outbox. Exercised signup/login/logout, Manager invitation/resend/revoke/accept and role privacy, disable/re-enable, website settings, three desktop themes, ceremony validation/status/archive, preview/publication/live changes, unpublication and stable addresses. Supplemented browser observations with 19 direct HTTP scenarios covering token expiry/reuse/replacement, password reset/session revocation, anonymous access and two-wedding isolation.
+- Reproduced stale draft settings after publishing. The owner supplied the fix during QA; rebuilt and independently verified Publish → return to settings → immediate save with no reload/conflict, plus the saved guest content. Genuine two-tab conflicts still retained entries. No application code was edited by this QA session.
+- Verification actually run here: root build passed before/after the fix, targeted website component tests passed seven tests. Full-suite results recorded by the implementation remain separate historical evidence. See MANUAL_M2_M3_QA.md for browser-versus-HTTP coverage, harness corrections and unverified cases.
+- Recorded remaining minor signup wording/feedback and last-ceremony archive guard wording. Mobile resize remained 1280px despite the requested override; mobile layout and independent focus-return/timer measurements are not claimed. No real Resend/production acceptance, deployment, commit or push occurred.
+- Stopped only the isolated QA server and explicitly awaited exact temporary database/outbox cleanup. Preserved development data/config/services and design references. Next: remaining UX copy, mobile/focus-return QA and controlled staging/provider acceptance.
+- Documentation validation: root `npm run format:check` and `git diff --check` passed for the QA handoff.
+
+### 18 October 2026 — M3 GitHub Desktop checkpoint preparation
+
+- Owner approved committing and pushing M3 on `feature/wedding-website-events` using GitHub Desktop. The checkpoint includes wedding settings, ceremonies, preview/publication, guest themes, the publication-return cache regression fix, implementation documentation and the manual M2/M3 QA report.
+- Re-ran root `npm run check`: passed formatting, zero-warning lint, root/package types, 101 tests across 15 files and the production build. `git diff --check` passed. Previous Atlas/browser results remain historical; they were not rerun for this Git-only handoff.
+- No production deployment, live email, permissions or scope changes. Remaining minor QA findings and provider/staging acceptance are preserved above and in MANUAL_M2_M3_QA.md. Next: complete those acceptance items, then agree M4 details. Git history and the remote branch record the resulting commit/push outcome.
 
 ## Update checklist for every development handoff
 

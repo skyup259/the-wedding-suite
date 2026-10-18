@@ -1,3 +1,5 @@
+import { websitePublicRoutes } from './modules/website/website.public.js';
+import type { WebsiteService } from './modules/website/website.service.js';
 import type { AccessService } from './modules/access/access.service.js';
 import express from 'express';
 import helmet from 'helmet';
@@ -18,6 +20,7 @@ export interface AppDependencies {
   trustProxy?: boolean;
   clientDirectory?: string;
   access?: AccessService;
+  website?: WebsiteService;
   auth?: { service: AuthService; options: AuthHttpOptions };
 }
 
@@ -50,6 +53,8 @@ export function createApp(dependencies: AppDependencies) {
   });
   api.use(express.json({ limit: '64kb' }));
   api.use('/v1/health', healthRoutes(dependencies.checkReady));
+  if (dependencies.website)
+    api.use('/v1/public', websitePublicRoutes(dependencies.website));
   if (dependencies.auth)
     api.use(
       '/v1',
@@ -57,13 +62,19 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.auth.service,
         dependencies.auth.options,
         dependencies.access,
+        dependencies.website,
       ),
     );
   api.use(apiNotFound);
   app.use('/api', api);
 
   if (dependencies.clientDirectory)
-    mountFrontend(app, dependencies.clientDirectory);
+    mountFrontend(
+      app,
+      dependencies.clientDirectory,
+      dependencies.website,
+      dependencies.auth?.options.origin,
+    );
   app.use((_req, res) => {
     sendError(res, 404, 'NOT_FOUND', 'Resource not found.');
   });

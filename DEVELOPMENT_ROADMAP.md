@@ -1,7 +1,7 @@
 # Development and deployment roadmap
 
 Created: 18 October 2026 (Asia/Kolkata).  
-Status: Delivery sequence; M1 is implemented. M2 team/recovery passed real Atlas integration/browser checks and its development migration; controlled Resend acceptance remains pending. Deployment and later milestones are pending.
+Status: Delivery sequence; M1 is implemented. M2 team/recovery passed real Atlas integration/browser checks and its development migration; controlled Resend acceptance remains pending. M3 wedding/events/themes passed local and Atlas checks with its development migration; owner review/staging and later milestones remain pending.
 
 ## Start here
 
@@ -133,6 +133,8 @@ Exit check: a Manager accepts once into the correct wedding; reused/expired/repl
 
 ### M3 — Wedding website, ceremonies and three themes
 
+Implemented on 18 October 2026 on feature/wedding-website-events. See WEBSITE_IMPLEMENTATION.md and PROJECT_STATUS.md for the 100-test root check, 15 real Atlas tests, browser journeys, development migration and remaining review/staging limits.
+
 - Implement content/settings, chronological events, contacts/maps, announcements and manual ceremony status. Revisions/`If-Match` prevent silent overwrites.
 - Add private preview, publication/unpublication and stable published slugs. Saved edits go live after first publication; unpublishing hides anonymous content/media authorisation.
 - Build the shared guest model and first theme completely, then adapt the other two presentations. Dashboard style remains independent. Use photo fallbacks until M6 provides managed cover media.
@@ -213,7 +215,7 @@ No hosting account, workflow, email, domain, database migration or deployment is
 
 ## Ready-to-start development backlog
 
-Next development work after M2 live acceptance: **M3 — wedding content/events, guest preview/publication and three themes**. M1 and M2 code is implemented; consult PROJECT_STATUS.md for verification limits.
+Next development work after the current review/staging prerequisites: **M4 — families, selected-event personal links, sharing and estimates**. M1–M3 code is implemented; consult PROJECT_STATUS.md for actual verification and remaining provider limits.
 
 | Issue | Deliverable                                                                                                                |
 | ----- | -------------------------------------------------------------------------------------------------------------------------- |

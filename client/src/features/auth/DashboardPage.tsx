@@ -77,6 +77,10 @@ export function DashboardPage() {
           </span>
         </section>
         <p>
+          <Link to="/website">Manage wedding website</Link> ·{' '}
+          <Link to="/events">Manage ceremonies</Link>
+        </p>
+        <p>
           <Link to="/team">
             {data.user.role === 'admin'
               ? 'Manage wedding team'
@@ -86,9 +90,8 @@ export function DashboardPage() {
         <section className={styles.nextCard}>
           <h2>You’re all set.</h2>
           <p>
-            Your account and wedding workspace are ready. Website customisation,
-            events, and the rest of your planning tools will arrive here as they
-            become available.
+            Your workspace is ready. Add your ceremonies, choose a website
+            theme, and preview the guest experience before publishing.
           </p>
         </section>
         {error && (

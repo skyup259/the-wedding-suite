@@ -1,0 +1,538 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.3rem 5vw;
+  background: #f3f4ef;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.brand {
+  font: 700 1.6rem var(--font-heading);
+  text-decoration: none;
+}
+.header nav,
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.header nav a {
+  padding: 0.25rem 0;
+  text-decoration: none;
+}
+.header nav a[aria-current] {
+  border-bottom: 2px solid var(--color-accent);
+}
+.main {
+  max-width: 70rem;
+  margin: auto;
+  padding: 3rem 1.5rem;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+.panel {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.7rem;
+  margin: 1.6rem 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.panel h2 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  margin-top: 0;
+  font-size: 1.8rem;
+}
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.muted {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+.error {
+  background: #fcf0eb;
+  border: 1px solid #e4bdb3;
+  border-radius: 0.4rem;
+  color: #872d23;
+  padding: 1rem;
+}
+.secondary {
+  background: transparent;
+  color: var(--color-accent);
+}
+.buttonLink {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 0.35rem;
+  text-decoration: none;
+  min-height: 44px;
+}
+.badge {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid #bcc6b4;
+  border-radius: 1rem;
+}
+.label {
+  display: block;
+  margin: 1rem 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.main textarea,
+.main select {
+  width: 100%;
+  border: 1px solid #b3b9ad;
+  background: #fff;
+  color: var(--color-text);
+  font: inherit;
+  padding: 0.7rem;
+  border-radius: 0.4rem;
+  min-height: 48px;
+}
+.main textarea {
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+.main fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: 0.4rem;
+}
+.themes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.themeOption {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.themeOption:has(input:checked) {
+  border-color: var(--color-accent);
+}
+.themeOption > span:last-child {
+  font-size: 0.8rem;
+}
+.themeSwatch {
+  display: grid;
+  place-items: center;
+  min-height: 100px;
+  font:
+    2rem Georgia,
+    serif;
+  border-radius: 0.4rem;
+  background: #f4e6d7;
+  color: #703e2b;
+}
+.themeOption[data-theme='floral'] .themeSwatch {
+  background: #e5ede2;
+  border-radius: 50% 50% 0.5rem 0.5rem;
+  color: #435438;
+}
+.themeOption[data-theme='minimal'] .themeSwatch {
+  background: #f2f3f3;
+  color: #263d52;
+  border-radius: 0;
+}
+.eventList {
+  margin-top: 1.5rem;
+}
+.preview {
+  border-top: 1px solid var(--color-border);
+}
+.empty {
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+.refreshNote {
+  margin: 0;
+  background: #f3f4ef;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.72rem;
+}
+.refreshError {
+  padding: 1rem;
+  background: #fcf0eb;
+  text-align: center;
+}
+.guest {
+  --paper: #fcf5eb;
+  --ink: #312820;
+  --soft: #f0e2d1;
+  --line: #d6c3aa;
+  --guest-accent: #435438;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-wrap: anywhere;
+}
+.guest h1,
+.guest h2,
+.guest h3 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.guest a {
+  color: var(--guest-accent);
+}
+.guest .eyebrow {
+  color: var(--guest-accent);
+}
+.guestNav {
+  max-width: 76rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--line);
+}
+.guestNav > a {
+  font:
+    1.25rem Georgia,
+    serif;
+  text-decoration: none;
+}
+.guestNav nav {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+}
+.guestNav nav a {
+  text-decoration: none;
+}
+.hero {
+  position: relative;
+  text-align: center;
+  max-width: 68rem;
+  margin: 3rem auto 5rem;
+  padding: 4rem 2rem 5rem;
+  border: 1px solid var(--line);
+  outline: 1px solid var(--line);
+  outline-offset: -12px;
+}
+.hero h1 {
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.05;
+  margin: 2rem 0;
+}
+.hero h1 em {
+  font-size: 2.5rem;
+  line-height: 1.5;
+  color: var(--guest-accent);
+  font-style: italic;
+}
+.ornament {
+  font-size: 3.5rem;
+  color: var(--guest-accent);
+  line-height: 1.2;
+}
+.date {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+}
+.intro {
+  max-width: 35rem;
+  margin: 1.5rem auto;
+  white-space: pre-wrap;
+}
+.guestButton {
+  display: inline-flex;
+  gap: 2rem;
+  text-decoration: none;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--guest-accent);
+  font-size: 0.85rem;
+  margin-top: 1.5rem;
+}
+.welcome {
+  max-width: 46rem;
+  text-align: center;
+  margin: 0 auto 5rem;
+  padding: 0 1.5rem;
+}
+.welcome h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.25;
+}
+.welcome p {
+  white-space: pre-wrap;
+}
+.latest {
+  background: var(--soft);
+  padding: 3rem max(2rem, calc((100vw - 64rem) / 2));
+}
+.latest h2 {
+  font-size: 2.3rem;
+  line-height: 1.2;
+  max-width: 28rem;
+}
+.current,
+.announcement {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line);
+}
+.current h3 {
+  font-size: 1.8rem;
+  margin: 0.5rem 0;
+}
+.current p {
+  margin: 0.4rem 0;
+}
+.announcement p {
+  white-space: pre-wrap;
+}
+.schedule {
+  max-width: 68rem;
+  margin: 5rem auto;
+  padding: 0 2rem;
+}
+.schedule > h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0.5rem 0;
+}
+.ceremony {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 3rem;
+  border-top: 1px solid var(--line);
+  padding: 2.5rem 0;
+  margin-top: 1.5rem;
+}
+.ceremonyDate > span {
+  font:
+    3.3rem Georgia,
+    serif;
+  color: var(--guest-accent);
+}
+.ceremonyDate p {
+  font-size: 0.8rem;
+}
+.ceremonyDate strong {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.ceremonyBody h3 {
+  font-size: 2.4rem;
+  line-height: 1.15;
+  margin: 0.8rem 0;
+}
+.ceremonyBody > p {
+  white-space: pre-wrap;
+}
+.status {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.7rem;
+}
+.status[data-status='in_progress'] {
+  background: var(--guest-accent);
+  color: white;
+  border-color: var(--guest-accent);
+}
+.contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+.contacts > span {
+  font-size: 0.8rem;
+}
+.contacts a,
+.mapLink {
+  font-size: 0.85rem;
+  text-underline-offset: 0.25rem;
+  display: inline-block;
+  padding: 0.3rem 0;
+  min-height: 44px;
+}
+.guestFooter {
+  text-align: center;
+  background: var(--soft);
+  padding: 3rem 1.5rem;
+}
+.guestFooter > span {
+  font-size: 2rem;
+  color: var(--guest-accent);
+}
+.guestFooter p {
+  font:
+    1.5rem Georgia,
+    serif;
+}
+.guestFooter small {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.guest[data-theme='floral'] {
+  --paper: #f8faf5;
+  --ink: #243226;
+  --soft: #e9efdf;
+  --line: #c4cebd;
+}
+.guest[data-theme='floral'] .hero {
+  background:
+    radial-gradient(ellipse at 0 0, #dce8d0 0, transparent 40%),
+    radial-gradient(ellipse at 100% 100%, #e1e7cf 0, transparent 40%);
+  outline: 0;
+  border-radius: 48% 48% 1rem 1rem;
+  padding-top: 5rem;
+}
+.guest[data-theme='floral'] .ceremony {
+  border-radius: 1rem;
+  background: #fff;
+  padding: 2rem;
+  margin-top: 2rem;
+  border: 1px solid var(--line);
+}
+.guest[data-theme='minimal'] {
+  --paper: #fff;
+  --ink: #222a30;
+  --soft: #f1f3f3;
+  --line: #d4dbde;
+}
+.guest[data-theme='minimal'] .hero {
+  border: 0;
+  outline: 0;
+  text-align: left;
+  margin-top: 1rem;
+}
+.guest[data-theme='minimal'] .hero h1 {
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+.guest[data-theme='minimal'] .ornament {
+  display: none;
+}
+.guest[data-theme='minimal'] .hero h1 em {
+  font: 300 3rem var(--font-body);
+}
+.guest[data-theme='minimal'] .intro {
+  margin-left: 0;
+}
+.guest[data-theme='minimal'] .guestNav > a {
+  font-family: var(--font-body);
+}
+.guest[data-theme='minimal'] .ceremonyDate > span {
+  font-family: var(--font-body);
+  font-size: 2rem;
+}
+.guest[data-theme='minimal'] .ceremonyBody h3 {
+  font-family: var(--font-body);
+  font-size: 2rem;
+}
+@media (max-width: 700px) {
+  .main {
+    padding: 2rem 1.25rem;
+  }
+  .header {
+    padding: 1rem 1.25rem;
+    gap: 1rem;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+  .header nav {
+    gap: 1rem;
+    font-size: 0.8rem;
+  }
+  .pair,
+  .themes {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .panel {
+    padding: 1.2rem;
+  }
+  .themeOption {
+    margin-bottom: 0.7rem;
+  }
+  .guestNav {
+    padding: 1.25rem;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .guestNav > a {
+    font-size: 1.1rem;
+  }
+  .hero {
+    margin: 1.5rem 1.1rem 3rem;
+    padding: 2.5rem 1.2rem 3rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 13vw, 4.5rem);
+  }
+  .welcome {
+    margin-bottom: 3rem;
+  }
+  .latest {
+    padding: 2rem 1.25rem;
+  }
+  .latest h2 {
+    font-size: 1.9rem;
+  }
+  .schedule {
+    padding: 0 1.25rem;
+    margin: 3rem auto;
+  }
+  .ceremony {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .ceremonyDate > span {
+    font-size: 2rem;
+  }
+  .ceremonyDate p {
+    display: inline;
+    margin: 0 0.5rem;
+  }
+  .ceremonyDate strong {
+    display: block;
+  }
+  .ceremonyBody h3 {
+    font-size: 2rem;
+  }
+  .guest[data-theme='floral'] .ceremony {
+    padding: 1.25rem;
+  }
+  .guest[data-theme='floral'] .hero {
+    border-radius: 5rem 5rem 0.5rem 0.5rem;
+    padding-top: 3rem;
+  }
+  .guest[data-theme='minimal'] .hero {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .guestFooter p {
+    font-size: 1.3rem;
+  }
+}

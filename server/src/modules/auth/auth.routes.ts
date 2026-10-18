@@ -1,3 +1,5 @@
+import { mountWebsiteRoutes } from '../website/website.routes.js';
+import type { WebsiteService } from '../website/website.service.js';
 import { randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import type { CookieOptions, Request, Response } from 'express';
@@ -27,6 +29,7 @@ export function authRoutes(
   service: AuthService,
   options: AuthHttpOptions,
   access?: AccessService,
+  website?: WebsiteService,
 ) {
   const router = Router();
   const allowedOrigins = new Set([options.origin]);
@@ -348,6 +351,17 @@ export function authRoutes(
       envelope(req, res, result);
     });
   }
+  if (website)
+    mountWebsiteRoutes(router, website, async (req) => {
+      const actor = await service.resolve(token(req));
+      if (!actor)
+        throw new HttpError(
+          401,
+          'AUTH_REQUIRED',
+          'Please sign in to continue.',
+        );
+      return actor;
+    });
   router.use(
     (
       error: unknown,

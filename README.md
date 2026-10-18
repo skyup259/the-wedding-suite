@@ -1,6 +1,6 @@
 # The Wedding Suite
 
-An Indian wedding management application, built as a modular monolith. The first feature is implemented: create a wedding/Admin account, sign in, restore a session, and sign out from a protected dashboard. Manager invitations, team access and password recovery are also implemented, with a private development outbox and an optional Resend adapter. Real Atlas integration/browser checks and the development migration for this milestone passed; live email delivery remains unverified. Other wedding tools follow the roadmap.
+An Indian wedding management application, built as a modular monolith. The first feature is implemented: create a wedding/Admin account, sign in, restore a session, and sign out from a protected dashboard. Manager invitations, team access and password recovery are also implemented, with a private development outbox and an optional Resend adapter. Real Atlas integration/browser checks and the development migration for this milestone passed; live email delivery remains unverified. Wedding website and ceremony tools are implemented as M3; see [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md) and the status for current acceptance. Other wedding tools follow the roadmap.
 
 Start with [PROJECT_STATUS.md](./PROJECT_STATUS.md) for progress, decisions, verification, and the next development milestone. Update that document with every meaningful development change. [AGENTS.md](./AGENTS.md) makes this handoff requirement explicit for future coding agents and contributors.
 
@@ -18,7 +18,7 @@ The first feature is detailed in [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTA
 1. Run `npm ci` at the repository root.
 2. Copy `server/.env.example` to `server/.env` locally.
 3. Set the real Atlas URI privately, using [MONGODB_DEVELOPMENT.md](./MONGODB_DEVELOPMENT.md). Percent-encode reserved characters in URI credentials. Select `marriage_suite_dev`; never select a system or sample database. Check your current Atlas network access and database-user permissions.
-4. Run `npm run db:migrate` to explicitly apply the authentication validators/indexes. This seeds no wedding or account.
+4. Run `npm run db:migrate` to explicitly apply the available feature validators/indexes. This seeds no wedding or account.
 5. Run `npm run dev`.
 6. Open `http://localhost:5173`. Vite proxies `/api` to Express on port 3000.
 
@@ -75,7 +75,7 @@ Run one development entry point at a time. Root scripts prepare shared output au
 | `server/` | Express, TypeScript, MongoDB driver, validated configuration and HTTP foundation |
 | `shared/` | Browser-safe Zod schemas and API types                                           |
 
-Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, and `@wedding-suite/shared/auth` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
+Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, `@wedding-suite/shared/auth`, `@wedding-suite/shared/access`, and `@wedding-suite/shared/website` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
 
 All development entry points build shared first. TypeScript then watches shared with `noEmitOnError`; backend watch explicitly includes shared emitted JavaScript. Vite observes the linked package without pre-bundling it. A shared compilation failure leaves the last valid runtime output in use while the compiler reports the error; correct it to resume updates. `check` must pass before handing changes off.
 
@@ -97,7 +97,7 @@ Email is trimmed/lowercased without removing dots or plus tags. Passwords are 15
 
 Writes obtain a CSRF token automatically and must send the configured `APP_ORIGIN`. HTTP development permits the equivalent localhost/127.0.0.1 origin on the same port; production accepts exactly the configured HTTPS origin. Production cookies are Secure, HttpOnly and `__Host-` prefixed. Set a private, stable `CSRF_SECRET` of at least 32 characters in production (`openssl rand -base64 32`); development generates a process-local secret if absent. No Resend/S3 credentials are needed for signup/login/logout or local outbox review.
 
-The explicit migrations create validators/indexes for users, weddings, sessions, auditLogs, authRateLimits, authTokens and auth-email jobs plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
+The explicit migrations create validators/indexes for users, weddings, sessions, auditLogs, authRateLimits, authTokens, auth-email jobs and events plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
 
 For staging/production: build with dev dependencies, configure environment/secrets, run `npm run db:migrate:production -w @wedding-suite/server` once using the compiled output, then start the service. Set the intended environment explicitly; production never loads `server/.env`. Test signup/signin/signout over the real HTTPS origin. Configure proxy trust for the actual host so IP rate limits work correctly. Manager invitations and password recovery are covered in [TEAM_RECOVERY.md](./TEAM_RECOVERY.md); email verification remains outside the implemented scope.
 
@@ -105,7 +105,7 @@ For staging/production: build with dev dependencies, configure environment/secre
 
 Set `NODE_ENV=production`, an HTTPS `APP_ORIGIN`, and private Atlas configuration, then run `npm run build` and `npm start`. Production does not load a local `.env`; use deployment environment/secret configuration.
 
-`/api/v1/health/live` checks the process. `/api/v1/health/ready` checks current database connectivity. Unknown `/api` routes return JSON 404 errors, including when HTML is requested. Malformed/oversized API JSON receives a JSON error. Static serving exposes only `client/dist`. Frontend GET navigation accepting HTML receives the React shell; missing assets and non-navigation requests do not. Wedding-specific titles/social metadata will be added with the website feature.
+`/api/v1/health/live` checks the process. `/api/v1/health/ready` checks current database connectivity. Unknown `/api` routes return JSON 404 errors, including when HTML is requested. Malformed/oversized API JSON receives a JSON error. Static serving exposes only `client/dist`. Frontend GET navigation accepting HTML receives the React shell; missing assets and non-navigation requests do not. Published `/w/:slug` pages include escaped wedding-specific titles/social metadata from the website feature.
 
 HTTP logs omit paths, query strings, headers and bodies to prevent access-link leakage. Error responses contain a request ID and no stack traces or provider diagnostics.
 
@@ -117,7 +117,7 @@ HTTP logs omit paths, query strings, headers and bodies to prevent access-link l
 - Backend `src/infrastructure/`: database, private S3, provider-neutral email and Places integration boundaries.
 - Client `src/features/`, `components/`, and `themes/{shared,traditional,floral,minimal}`: feature organisation, common guest behaviour and presentation variants. Dashboard styling remains independent.
 
-Manager setup/recovery and durable auth-email processing are implemented; [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) explains setup, private outbox review, recipient restrictions and remaining live verification. Operational wedding endpoints, three finished themes, photo uploads/moderation/exports, family email dispatch and vendor search are not implemented. Add their dependencies when used. The scaffold does not present sample data as real application results.
+Manager setup/recovery and durable auth-email processing are implemented; [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) explains setup, private outbox review, recipient restrictions and remaining live verification. Wedding/event editing, private preview, publish/unpublish, announcements and three guest theme presentations are implemented; see [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md). Photo uploads/moderation/exports, family email dispatch and vendor search remain future work. Add their dependencies when used. The scaffold does not present sample data as real application results.
 
 ## Planning references and decisions
 

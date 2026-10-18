@@ -1,3 +1,5 @@
+import { MongoWebsiteStore } from './modules/website/website.repository.js';
+import { WebsiteService } from './modules/website/website.service.js';
 import { emailRuntime } from './infrastructure/email.js';
 import { MongoAccessStore } from './modules/access/access.repository.js';
 import { AccessService } from './modules/access/access.service.js';
@@ -57,6 +59,9 @@ async function start(): Promise<void> {
         );
       }
       return createApp({
+        website: new WebsiteService(
+          new MongoWebsiteStore(database.client, database.db),
+        ),
         ...(access ? { access } : {}),
         logger,
         trustProxy: config.TRUST_PROXY,

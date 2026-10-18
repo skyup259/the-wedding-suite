@@ -1,3 +1,4 @@
+import type { WeddingEdit } from '@wedding-suite/shared/website';
 import type { ObjectId } from 'mongodb';
 import type { AuthData } from '@wedding-suite/shared/auth';
 
@@ -31,11 +32,15 @@ export interface WeddingRecord extends RecordBase {
     themeId: AuthData['wedding']['themeId'];
     intro: string;
     welcomeMessage: string;
-    accentColor: string;
+    accentColor: WeddingEdit['website']['accentColor'];
     coverPhotoId: null;
   };
-  location: null;
-  latestAnnouncement: null;
+  location: WeddingEdit['location'];
+  latestAnnouncement: {
+    message: string;
+    updatedAt: Date;
+    updatedBy: ObjectId;
+  } | null;
   gallery: {
     uploadsEnabled: boolean;
     privateLinkEnabled: boolean;
@@ -45,7 +50,7 @@ export interface WeddingRecord extends RecordBase {
   photoExpiryAt: Date;
   retentionVersion: number;
   mediaCleanup: {
-    state: 'idle';
+    state: 'idle' | 'queued' | 'running' | 'complete' | 'failed';
     lastAttemptAt: null;
     completedAt: null;
     errorCode: null;

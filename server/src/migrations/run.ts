@@ -1,6 +1,7 @@
 import { loadDevelopmentEnvironment } from '../config/load-env.js';
 import { parseEnvironment } from '../config/env.js';
 import { connectDatabase } from '../infrastructure/database/mongo.js';
+import { migrateWebsite } from './003-wedding-events.js';
 import { migrateAccess } from './002-team-recovery.js';
 import { migrateAuth } from './001-auth-foundation.js';
 
@@ -14,8 +15,9 @@ try {
   try {
     await migrateAuth(database.db);
     await migrateAccess(database.db);
+    await migrateWebsite(database.db);
     console.log(
-      'Authentication and team/recovery schema migrations complete. No wedding records seeded.',
+      'Authentication, team/recovery and website/events schema migrations complete. No wedding records seeded.',
     );
   } finally {
     await database.close();

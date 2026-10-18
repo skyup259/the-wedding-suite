@@ -1,3 +1,7 @@
+import { migrateWebsite } from '../src/migrations/003-wedding-events.js';
+import { MongoWebsiteStore } from '../src/modules/website/website.repository.js';
+import { WebsiteService } from '../src/modules/website/website.service.js';
+import { MemoryWebsiteStore } from './helpers/memory-website-store.js';
 import { MemoryAuthStore } from './helpers/memory-auth-store.js';
 import { MemoryAccessStore } from './helpers/memory-access-store.js';
 import { rm } from 'node:fs/promises';
@@ -28,6 +32,7 @@ try {
   if (database) {
     await migrateAuth(database.db);
     await migrateAccess(database.db);
+    await migrateWebsite(database.db);
   }
   const authStore = database
     ? new MongoAuthStore(database.client, database.db)
@@ -53,6 +58,11 @@ try {
       new URL('../../client/dist', import.meta.url),
     ),
     access,
+    website: new WebsiteService(
+      database
+        ? new MongoWebsiteStore(database.client, database.db)
+        : new MemoryWebsiteStore(authStore as MemoryAuthStore),
+    ),
     auth: {
       service: auth,
       options: {

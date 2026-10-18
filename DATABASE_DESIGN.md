@@ -383,3 +383,14 @@ Manager creation, token consumption, session creation, queued-job cancellation a
 Durable email requires recoverable message bytes until dispatch. `authTokens` remains hash-only; a separate AES-256-GCM encrypted email envelope lives temporarily in `jobs`, authenticated with the job ID and a private key stored outside MongoDB. Jobs contain token ID/revision, immutable provider idempotency key, status/outcome, bounded attempts/backoff, expiry, first-attempt timestamp and owner/version/expiry-fenced leases. Envelopes are cleared on terminal outcome. No API returns them. This extension resolves the previously missing durable-email job contract; it does not make auth tokens re-shareable. See TEAM_RECOVERY.md for outbox handling, key replacement and the provider retry horizon.
 
 Live jobs have no TTL. Terminal job/audit metadata retention still requires an operating decision before production. Existing wedding/photo retention and archive access rules are unchanged. These notes describe implementation, not successful Atlas migration or provider verification; consult PROJECT_STATUS.md for actual evidence.
+
+
+## M3 implementation notes — 18 October 2026
+
+Migration 003 adds strict event validation and a weddingId/archivedAt/startAt/sortOrder/_id schedule index, with the existing owner-held migration lock/history pattern. Event drafts may lack venue/contacts; publication validation requires one or two contacts and venue name/address for every active event. Streaming remains null until M7. No photo job or managed cover reference is enabled.
+
+Wedding/event/audit mutations use MongoDB transactions, revalidate/write-lock the acting active account and always advance the parent wedding revision. This makes publication validation conflict with simultaneous event edits instead of publishing an inconsistent schedule. Events maintain their own revisions; archive preserves the document/references. Public read transactions project only published wedding content and active events. Safe nested projections explicitly whitelist website/couple/venue/contact fields and always return a null unmanaged cover reference.
+
+Date/timezone changes recalculate authoritative photoExpiryAt and increment retentionVersion when changed, without rewriting event instants. Access extension is blocked after cleanup may have started (running/complete/failed); no date change restores deleted bytes. Published slug locks survive unpublication. Before first publication, unrelated saves preserve signup collision suffixes; actual name/date changes may regenerate the draft address with uniqueness enforcement.
+
+This section records the implemented data path, not a claim that a production migration or deployment occurred. See PROJECT_STATUS.md for test results and development migration state.
