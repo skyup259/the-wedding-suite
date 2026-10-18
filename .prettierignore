@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+PRD.md
+SYSTEM_ARCHITECTURE.md
+DATABASE_DESIGN.md
+API_DESIGN.md
+MONGODB_DEVELOPMENT.md
+stitch_marriage_suite_ui_design/
