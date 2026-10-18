@@ -301,3 +301,8 @@ No further product decision is needed to begin technical design within this base
 - [Amazon S3: presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
 - [Google Places: Text Search](https://developers.google.com/maps/documentation/places/web-service/text-search)
 - [Google Places: policies and attribution](https://developers.google.com/maps/documentation/places/web-service/policies)
+
+
+## M2 email foundation — 18 October 2026
+
+Manager setup/recovery and the first durable `auth_email` worker are implemented. Resend is the selected adapter; sender/domain provisioning and real delivery remain unverified. Development uses a private local outbox by default; production email is disabled until explicitly configured. MongoDB jobs use leases, version fencing, bounded retries and a stable provider idempotency key. Queued email envelopes are separately authenticated/encrypted and cleared on terminal outcomes; identity-token storage remains hash-only. No queue service, family campaign dispatch, photo worker or production deployment has been added. See TEAM_RECOVERY.md and PROJECT_STATUS.md for configuration and verification limits.

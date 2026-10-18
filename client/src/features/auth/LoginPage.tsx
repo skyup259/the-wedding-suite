@@ -66,6 +66,9 @@ export function LoginPage() {
           {form.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
         <p className={styles.switch}>
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
+        <p className={styles.switch}>
           Planning your wedding? <Link to="/signup">Create a workspace</Link>
         </p>
       </form>

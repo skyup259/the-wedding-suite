@@ -1,3 +1,12 @@
+import { MemoryAuthStore } from './helpers/memory-auth-store.js';
+import { MemoryAccessStore } from './helpers/memory-access-store.js';
+import { rm } from 'node:fs/promises';
+import { migrateAccess } from '../src/migrations/002-team-recovery.js';
+import { MongoAccessStore } from '../src/modules/access/access.repository.js';
+import { AccessService } from '../src/modules/access/access.service.js';
+import { EmailVault, OutboxTransport } from '../src/infrastructure/email.js';
+import { AuthEmailWorker } from '../src/jobs/auth-email.js';
+import { e2eOutbox } from './helpers/e2e-outbox.js';
 import { fileURLToPath } from 'node:url';
 import { createTestDatabase } from './helpers/test-database.js';
 import { migrateAuth } from '../src/migrations/001-auth-foundation.js';
@@ -9,21 +18,43 @@ import { createLogger } from '../src/infrastructure/logger.js';
 // Dedicated ephemeral database; never serves or modifies the development wedding.
 if (!process.env.AUTH_E2E_DATABASE_NAME)
   throw new Error('Run browser tests through the root Playwright command.');
-const database = await createTestDatabase(process.env.AUTH_E2E_DATABASE_NAME);
+const database =
+  process.env.AUTH_E2E_MEMORY === '1'
+    ? null
+    : await createTestDatabase(process.env.AUTH_E2E_DATABASE_NAME);
+const outbox = e2eOutbox(process.env.AUTH_E2E_DATABASE_NAME);
+let worker: AuthEmailWorker | undefined;
 try {
-  await migrateAuth(database.db);
+  if (database) {
+    await migrateAuth(database.db);
+    await migrateAccess(database.db);
+  }
+  const authStore = database
+    ? new MongoAuthStore(database.client, database.db)
+    : new MemoryAuthStore();
+  const auth = await createAuthService(authStore);
+  const accessStore = database
+      ? new MongoAccessStore(database.client, database.db)
+      : new MemoryAccessStore(authStore as MemoryAuthStore),
+    vault = new EmailVault(Buffer.alloc(32, 4));
+  const access = new AccessService(
+    accessStore,
+    auth,
+    vault,
+    'http://127.0.0.1:3101',
+  );
+  worker = new AuthEmailWorker(accessStore, vault, new OutboxTransport(outbox));
   const app = createApp({
     logger: createLogger('silent'),
     checkReady: async () => {
-      await database.db.command({ ping: 1 });
+      if (database) await database.db.command({ ping: 1 });
     },
     clientDirectory: fileURLToPath(
       new URL('../../client/dist', import.meta.url),
     ),
+    access,
     auth: {
-      service: await createAuthService(
-        new MongoAuthStore(database.client, database.db),
-      ),
+      service: auth,
       options: {
         origin: 'http://127.0.0.1:3101',
         secure: false,
@@ -32,6 +63,7 @@ try {
     },
   });
   const server = app.listen(3101, '127.0.0.1', () => {
+    worker?.start();
     console.log('Isolated browser-test server ready.');
   });
   let stopping = false;
@@ -40,7 +72,9 @@ try {
     stopping = true;
     server.closeAllConnections();
     server.close();
-    await database.cleanup();
+    await worker?.stop();
+    await database?.cleanup();
+    await rm(outbox, { recursive: true, force: true });
   }
   process.once('SIGTERM', () => {
     void stop();
@@ -54,7 +88,9 @@ try {
     });
   });
 } catch {
-  await database.cleanup();
+  await worker?.stop();
+  await database?.cleanup();
+  await rm(outbox, { recursive: true, force: true });
   console.error(
     'Browser-test server setup failed. Check Atlas access and test database permissions.',
   );

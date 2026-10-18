@@ -1,7 +1,7 @@
 # Development and deployment roadmap
 
 Created: 18 October 2026 (Asia/Kolkata).  
-Status: Delivery sequence; M1 signup/login/logout is implemented and locally verified. Deployment and remaining milestones are pending.
+Status: Delivery sequence; M1 is implemented. M2 team/recovery passed real Atlas integration/browser checks and its development migration; controlled Resend acceptance remains pending. Deployment and later milestones are pending.
 
 ## Start here
 
@@ -123,6 +123,8 @@ Exit check: register two independent weddings; sign in/out; reload a session; de
 
 ### M2 — Team, recovery and durable email foundation
 
+Implementation added on 18 October 2026. See TEAM_RECOVERY.md and PROJECT_STATUS.md. Real Atlas migration/concurrency tests and both Atlas-backed browser journeys passed after network repair on 18 October 2026; development migration 002 is applied. Controlled Resend delivery and staging HTTPS acceptance remain required.
+
 - Add Manager invitation/acceptance/resend/revoke and disablement, plus password recovery. Only Admin controls team access; both team roles manage operational data later.
 - Add the first durable email jobs with atomic leases, retry/backoff and idempotent dispatch effects. The same runner will later handle photos; no separate queue service is needed.
 - Implement the Resend adapter, verified-sender configuration and templates. Keep a private development outbox and staging recipient restrictions.
@@ -211,7 +213,7 @@ No hosting account, workflow, email, domain, database migration or deployment is
 
 ## Ready-to-start development backlog
 
-Recommended first development issue: **M1.1 — Account and wedding creation with isolated sessions**, after the short M0 alignment/setup work.
+Next development work after M2 live acceptance: **M3 — wedding content/events, guest preview/publication and three themes**. M1 and M2 code is implemented; consult PROJECT_STATUS.md for verification limits.
 
 | Issue | Deliverable                                                                                                                |
 | ----- | -------------------------------------------------------------------------------------------------------------------------- |

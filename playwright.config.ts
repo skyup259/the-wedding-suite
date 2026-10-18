@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const databaseName = `ws_test_auth_${randomUUID().replaceAll('-', '').slice(0, 24)}`;
 export default defineConfig({
-  metadata: { databaseName },
+  metadata: { databaseName, memory: process.env.AUTH_E2E_MEMORY === '1' },
   globalTeardown: './tests/e2e/teardown.ts',
   testDir: './tests/e2e',
   fullyParallel: false,

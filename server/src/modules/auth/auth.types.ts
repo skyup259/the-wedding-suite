@@ -16,6 +16,8 @@ export interface UserRecord extends RecordBase {
   status: 'active' | 'disabled';
   sessionVersion: number;
   passwordChangedAt: Date;
+  teamRevision?: number;
+  accessRevision?: number;
 }
 export interface WeddingRecord extends RecordBase {
   couple: AuthData['wedding']['couple'];

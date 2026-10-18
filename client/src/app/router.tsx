@@ -1,3 +1,6 @@
+import { TeamPage } from '../features/access/TeamPage.js';
+import { RecoveryPage } from '../features/access/RecoveryPage.js';
+import { LinkPage } from '../features/access/LinkPage.js';
 import { createBrowserRouter } from 'react-router';
 import { ScaffoldPage } from './ScaffoldPage.js';
 import { NotFoundPage } from './NotFoundPage.js';
@@ -32,5 +35,16 @@ export const router = createBrowserRouter([
       </AccessGate>
     ),
   },
+  {
+    path: '/team',
+    element: (
+      <AccessGate>
+        <TeamPage />
+      </AccessGate>
+    ),
+  },
+  { path: '/forgot-password', element: <RecoveryPage /> },
+  { path: '/reset-password', element: <LinkPage /> },
+  { path: '/accept-invitation', element: <LinkPage manager /> },
   { path: '*', element: <NotFoundPage /> },
 ]);

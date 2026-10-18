@@ -1,3 +1,5 @@
+import { rm } from 'node:fs/promises';
+import { e2eOutbox } from '../../server/test/helpers/e2e-outbox.js';
 import type { FullConfig } from '@playwright/test';
 import { createTestDatabase } from '../../server/test/helpers/test-database.js';
 
@@ -7,7 +9,13 @@ export default async function teardown(config: FullConfig) {
   const name: unknown = config.metadata.databaseName;
   if (typeof name !== 'string')
     throw new Error('Missing browser-test database name.');
-  const database = await createTestDatabase(name);
-  await database.cleanup();
-  console.log('Isolated browser-test database removed.');
+  try {
+    if (!config.metadata.memory) {
+      const database = await createTestDatabase(name);
+      await database.cleanup();
+      console.log('Isolated browser-test database removed.');
+    }
+  } finally {
+    await rm(e2eOutbox(name), { recursive: true, force: true });
+  }
 }

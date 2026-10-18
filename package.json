@@ -30,7 +30,8 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "test:e2e:local": "AUTH_E2E_MEMORY=1 playwright test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -22,6 +22,10 @@
     "./themes": {
       "types": "./dist/themes.d.ts",
       "import": "./dist/themes.js"
+    },
+    "./access": {
+      "types": "./dist/access.d.ts",
+      "import": "./dist/access.js"
     }
   },
   "scripts": {

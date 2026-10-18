@@ -4,6 +4,15 @@ import type { CookieOptions, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { doubleCsrf } from 'csrf-csrf';
 import { loginSchema, registerSchema } from '@wedding-suite/shared/auth';
+import {
+  inviteSchema,
+  acceptManagerSchema,
+  resetRequestSchema,
+  resetConfirmSchema,
+  memberStatusSchema,
+} from '@wedding-suite/shared/access';
+import { requireAdmin } from '../access/access.service.js';
+import type { AccessService } from '../access/access.service.js';
 import { ZodError } from 'zod';
 import { HttpError } from '../../middleware/errors.js';
 import { digest, opaqueToken, publicIdentity } from './auth.service.js';
@@ -14,7 +23,11 @@ export interface AuthHttpOptions {
   secure: boolean;
   csrfSecret: string;
 }
-export function authRoutes(service: AuthService, options: AuthHttpOptions) {
+export function authRoutes(
+  service: AuthService,
+  options: AuthHttpOptions,
+  access?: AccessService,
+) {
   const router = Router();
   const allowedOrigins = new Set([options.origin]);
   const originUrl = new URL(options.origin);
@@ -94,7 +107,7 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
       maxAge: service.ttlSeconds * 1000,
     });
   };
-  router.get('/csrf', async (req, res) => {
+  router.get('/auth/csrf', async (req, res) => {
     // Block cross-origin token establishment too; normal browser same-origin GETs
     // need not have Origin. Fetch metadata supplies an additional browser signal.
     const origin = req.get('Origin');
@@ -147,7 +160,7 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
       );
     });
   });
-  router.post('/register', async (req, res) => {
+  router.post('/auth/register', async (req, res) => {
     await limit(req, res, `register:${req.ip}`, 5);
     const input = registerSchema.parse(req.body);
     const result = await service.register(
@@ -158,7 +171,7 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
     issue(res, result.token);
     envelope(req, res, result.data, 201);
   });
-  router.post('/login', async (req, res) => {
+  router.post('/auth/login', async (req, res) => {
     await limit(req, res, `login-ip:${req.ip}`, 30);
     const input = loginSchema.parse(req.body);
     await limit(req, res, `login-email:${input.email}`, 10);
@@ -166,7 +179,7 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
     issue(res, result.token);
     envelope(req, res, result.data);
   });
-  router.get('/me', async (req, res) => {
+  router.get('/auth/me', async (req, res) => {
     const current = await service.resolve(token(req));
     if (!current) {
       res.clearCookie(sessionName, cookies);
@@ -179,7 +192,7 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
     }
     envelope(req, res, publicIdentity(current));
   });
-  router.post('/logout', async (req, res) => {
+  router.post('/auth/logout', async (req, res) => {
     const current = await service.resolve(token(req));
     if (!current) {
       res.clearCookie(sessionName, cookies);
@@ -195,6 +208,146 @@ export function authRoutes(service: AuthService, options: AuthHttpOptions) {
     clearContext(res);
     res.status(204).end();
   });
+  if (!access)
+    router.use(
+      ['/team', '/auth/password-reset', '/auth/manager-invitations'],
+      () => {
+        throw new HttpError(
+          503,
+          'SERVICE_UNAVAILABLE',
+          'Team setup and account recovery are unavailable until email is configured.',
+        );
+      },
+    );
+  if (access) {
+    const current = async (req: Request) => {
+      const actor = await service.resolve(token(req));
+      if (!actor)
+        throw new HttpError(
+          401,
+          'AUTH_REQUIRED',
+          'Please sign in to continue.',
+        );
+      await access.ready();
+      return actor;
+    };
+    const precondition = (req: Request) => {
+      const match = /^"([1-9][0-9]*)"$/.exec(req.get('If-Match') ?? '');
+      if (!match || !Number.isSafeInteger(Number(match[1])))
+        throw new HttpError(
+          428,
+          'PRECONDITION_REQUIRED',
+          'Refresh and try again with the current revision.',
+        );
+      return Number(match[1]);
+    };
+    const rid = (res: Response) => String(res.locals.requestId);
+    router.post('/auth/password-reset/request', async (req, res) => {
+      await limit(req, res, `reset-request-ip:${req.ip}`, 10);
+      const input = resetRequestSchema.parse(req.body);
+      await limit(req, res, `reset-request-email:${input.email}`, 3);
+      await access.requestReset(input.email, rid(res));
+      envelope(
+        req,
+        res,
+        {
+          message:
+            'If an active account matches, password reset instructions will be sent.',
+        },
+        202,
+      );
+    });
+    router.post('/auth/password-reset/confirm', async (req, res) => {
+      await limit(req, res, `reset-confirm:${req.ip}`, 20);
+      const input = resetConfirmSchema.parse(req.body);
+      await access.confirmReset(input.token, input.newPassword, rid(res));
+      if (token(req)) await service.logout(token(req)!);
+      res.clearCookie(sessionName, cookies);
+      clearContext(res);
+      res.status(204).end();
+    });
+    router.post('/auth/manager-invitations/accept', async (req, res) => {
+      await limit(req, res, `manager-accept:${req.ip}`, 20);
+      const input = acceptManagerSchema.parse(req.body);
+      const result = await access.accept(input, token(req), rid(res));
+      issue(res, result.token);
+      envelope(req, res, result.data, 201);
+    });
+    router.get('/team', async (req, res) => {
+      const page = await access.listMembers(await current(req), req.query);
+      res.json({
+        data: page.items,
+        meta: {
+          requestId: res.locals.requestId,
+          nextCursor: page.nextCursor,
+          hasMore: page.hasMore,
+        },
+      });
+    });
+    router.get('/team/invitations', async (req, res) => {
+      const page = await access.listInvitations(await current(req), req.query);
+      res.json({
+        data: page.items,
+        meta: {
+          requestId: res.locals.requestId,
+          nextCursor: page.nextCursor,
+          hasMore: page.hasMore,
+        },
+      });
+    });
+    router.post('/team/invitations', async (req, res) => {
+      const actor = await current(req);
+      requireAdmin(actor);
+      await limit(req, res, `team-invite:${actor.user._id}`, 20);
+      const result = await access.invite(
+        actor,
+        inviteSchema.parse(req.body),
+        rid(res),
+      );
+      res.setHeader('ETag', `"${result.revision}"`);
+      envelope(req, res, result, 201);
+    });
+    router.post('/team/invitations/:id/resend', async (req, res) => {
+      const actor = await current(req);
+      requireAdmin(actor);
+      await limit(req, res, `team-resend:${actor.user._id}`, 20);
+      const result = await access.changeInvitation(
+        actor,
+        String(req.params.id),
+        precondition(req),
+        true,
+        rid(res),
+      );
+      res.setHeader('ETag', `"${result.revision}"`);
+      envelope(req, res, result, 202);
+    });
+    router.delete('/team/invitations/:id', async (req, res) => {
+      const actor = await current(req);
+      requireAdmin(actor);
+      await access.changeInvitation(
+        actor,
+        String(req.params.id),
+        precondition(req),
+        false,
+        rid(res),
+      );
+      res.status(204).end();
+    });
+    router.patch('/team/:id', async (req, res) => {
+      const actor = await current(req);
+      requireAdmin(actor);
+      const input = memberStatusSchema.parse(req.body);
+      const result = await access.changeMember(
+        actor,
+        String(req.params.id),
+        precondition(req),
+        input.status,
+        rid(res),
+      );
+      res.setHeader('ETag', `"${result.revision}"`);
+      envelope(req, res, result);
+    });
+  }
   router.use(
     (
       error: unknown,

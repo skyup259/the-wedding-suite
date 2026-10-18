@@ -1,6 +1,6 @@
 # The Wedding Suite
 
-An Indian wedding management application, built as a modular monolith. The first feature is implemented: create a wedding/Admin account, sign in, restore a session, and sign out from a protected dashboard. Other wedding tools follow the roadmap.
+An Indian wedding management application, built as a modular monolith. The first feature is implemented: create a wedding/Admin account, sign in, restore a session, and sign out from a protected dashboard. Manager invitations, team access and password recovery are also implemented, with a private development outbox and an optional Resend adapter. Real Atlas integration/browser checks and the development migration for this milestone passed; live email delivery remains unverified. Other wedding tools follow the roadmap.
 
 Start with [PROJECT_STATUS.md](./PROJECT_STATUS.md) for progress, decisions, verification, and the next development milestone. Update that document with every meaningful development change. [AGENTS.md](./AGENTS.md) makes this handoff requirement explicit for future coding agents and contributors.
 
@@ -44,25 +44,26 @@ If the same configuration connected earlier but now fails during TLS negotiation
 
 ## Commands
 
-| Command                    | Purpose                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------- |
-| `npm run dev`              | Build shared, then watch shared/server/client                                   |
-| `npm run dev:client`       | Build/watch shared and run Vite without backend credentials                     |
-| `npm run dev:server`       | Build/watch shared and backend                                                  |
-| `npm run build`            | Build shared, server, then client; stop on failure                              |
-| `npm start`                | Start compiled Express; use production environment to serve the built frontend  |
-| `npm run typecheck`        | Build shared declarations and check all packages, including tests/configuration |
-| `npm test`                 | Build shared and run all test projects once                                     |
-| `npm run test:client`      | Run only client tests                                                           |
-| `npm run test:server`      | Run only server tests                                                           |
-| `npm run test:shared`      | Run only shared tests                                                           |
-| `npm run lint`             | ESLint with zero warnings allowed                                               |
-| `npm run format`           | Format application code and maintained project docs                             |
-| `npm run format:check`     | Check formatting without writing                                                |
-| `npm run db:migrate`       | Apply the versioned auth schema explicitly; never seed business data            |
-| `npm run test:integration` | Test real Atlas transactions/indexes using an isolated temporary database       |
-| `npm run test:e2e`         | Build and run the real browser journey against an isolated temporary database   |
-| `npm run check`            | Formatting, lint, types, tests, and production build                            |
+| Command                    | Purpose                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run dev`              | Build shared, then watch shared/server/client                                              |
+| `npm run dev:client`       | Build/watch shared and run Vite without backend credentials                                |
+| `npm run dev:server`       | Build/watch shared and backend                                                             |
+| `npm run build`            | Build shared, server, then client; stop on failure                                         |
+| `npm start`                | Start compiled Express; use production environment to serve the built frontend             |
+| `npm run typecheck`        | Build shared declarations and check all packages, including tests/configuration            |
+| `npm test`                 | Build shared and run all test projects once                                                |
+| `npm run test:client`      | Run only client tests                                                                      |
+| `npm run test:server`      | Run only server tests                                                                      |
+| `npm run test:shared`      | Run only shared tests                                                                      |
+| `npm run lint`             | ESLint with zero warnings allowed                                                          |
+| `npm run format`           | Format application code and maintained project docs                                        |
+| `npm run format:check`     | Check formatting without writing                                                           |
+| `npm run db:migrate`       | Apply versioned auth and team/recovery schemas explicitly; never seed business data        |
+| `npm run test:integration` | Test real Atlas transactions/indexes using an isolated temporary database                  |
+| `npm run test:e2e:local`   | Run built-app browser journeys with explicit in-memory test stores; no Atlas or real email |
+| `npm run test:e2e`         | Build and run the real browser journey against an isolated temporary database              |
+| `npm run check`            | Formatting, lint, types, tests, and production build                                       |
 
 Run one development entry point at a time. Root scripts prepare shared output automatically; direct workspace consumer commands assume shared has already been built.
 
@@ -86,7 +87,7 @@ The root `vitest.config.ts` explicitly references three package projects. Client
 
 `npm run test:integration` discovers only `server/test/**/*.integration.test.ts` through `server/vitest.integration.config.ts`. `npm run test:e2e` discovers `tests/e2e/*.spec.ts` through Playwright, builds all packages, and starts a separate production-asset test server on port 3101. It uses installed Google Chrome by default; set `PLAYWRIGHT_CHANNEL=chromium` if using an installed Playwright Chromium browser instead. It never reuses the running development server.
 
-Both explicit commands use `TEST_MONGODB_URI` when set, otherwise private `MONGODB_URI` or `server/.env`. They create a random `ws_test_auth_<24 hex>` database, populate synthetic accounts, and drop only that exact generated database on completion. Playwright also awaits database removal in its global teardown, independently of child-server shutdown. The selected URI's database is never used for test writes. The Atlas database user needs create/index/transaction/drop rights on these temporary databases; a dedicated test user/cluster is recommended in CI. Never supply production credentials. After a hard process kill, inspect and remove the specific leftover test database deliberately. Screenshots under ignored `test-results/` use synthetic data; traces are disabled.
+The default Atlas integration and browser commands use `TEST_MONGODB_URI` when set, otherwise private `MONGODB_URI` or `server/.env`. They create a random `ws_test_auth_<24 hex>` database, populate synthetic accounts, and drop only that exact generated database on completion. Playwright also awaits database removal in its global teardown, independently of child-server shutdown. The selected URI's database is never used for test writes. The Atlas database user needs create/index/transaction/drop rights on these temporary databases; a dedicated test user/cluster is recommended in CI. Never supply production credentials. After a hard process kill, inspect and remove the specific leftover test database deliberately. Screenshots under ignored `test-results/` use synthetic data; traces are disabled.
 
 ## Authentication and migrations
 
@@ -94,11 +95,11 @@ Open `/signup` to enter account details, then both partner names, the wedding da
 
 Email is trimmed/lowercased without removing dots or plus tags. Passwords are 15–128 characters, with spaces/paste permitted; only Argon2id hashes are stored. Sessions last 24 hours by default (`SESSION_TTL_SECONDS`), are checked on every private request, and are stored as SHA-256 hashes of random opaque cookie tokens. Logout revokes the current session and clears private query data; other tabs refresh identity through BroadcastChannel. No authentication token is stored in localStorage.
 
-Writes obtain a CSRF token automatically and must send the configured `APP_ORIGIN`. HTTP development permits the equivalent localhost/127.0.0.1 origin on the same port; production accepts exactly the configured HTTPS origin. Production cookies are Secure, HttpOnly and `__Host-` prefixed. Set a private, stable `CSRF_SECRET` of at least 32 characters in production (`openssl rand -base64 32`); development generates a process-local secret if absent. No Resend/S3 credentials are needed for this feature.
+Writes obtain a CSRF token automatically and must send the configured `APP_ORIGIN`. HTTP development permits the equivalent localhost/127.0.0.1 origin on the same port; production accepts exactly the configured HTTPS origin. Production cookies are Secure, HttpOnly and `__Host-` prefixed. Set a private, stable `CSRF_SECRET` of at least 32 characters in production (`openssl rand -base64 32`); development generates a process-local secret if absent. No Resend/S3 credentials are needed for signup/login/logout or local outbox review.
 
-The explicit migration creates validators/indexes for users, weddings, sessions, auditLogs and authRateLimits plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
+The explicit migrations create validators/indexes for users, weddings, sessions, auditLogs, authRateLimits, authTokens and auth-email jobs plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
 
-For staging/production: build with dev dependencies, configure environment/secrets, run `npm run db:migrate:production -w @wedding-suite/server` once using the compiled output, then start the service. Set the intended environment explicitly; production never loads `server/.env`. Test signup/signin/signout over the real HTTPS origin. Configure proxy trust for the actual host so IP rate limits work correctly. Password recovery, email verification and Manager invitations are follow-up features; they are not advertised as working controls here.
+For staging/production: build with dev dependencies, configure environment/secrets, run `npm run db:migrate:production -w @wedding-suite/server` once using the compiled output, then start the service. Set the intended environment explicitly; production never loads `server/.env`. Test signup/signin/signout over the real HTTPS origin. Configure proxy trust for the actual host so IP rate limits work correctly. Manager invitations and password recovery are covered in [TEAM_RECOVERY.md](./TEAM_RECOVERY.md); email verification remains outside the implemented scope.
 
 ## Production HTTP routing
 
@@ -116,7 +117,7 @@ HTTP logs omit paths, query strings, headers and bodies to prevent access-link l
 - Backend `src/infrastructure/`: database, private S3, provider-neutral email and Places integration boundaries.
 - Client `src/features/`, `components/`, and `themes/{shared,traditional,floral,minimal}`: feature organisation, common guest behaviour and presentation variants. Dashboard styling remains independent.
 
-Manager invitation/recovery, operational wedding endpoints, three finished themes, photo uploads/moderation/exports, background processing, email and vendor search are not implemented. Add their dependencies when used. The scaffold does not present sample data as real application results.
+Manager setup/recovery and durable auth-email processing are implemented; [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) explains setup, private outbox review, recipient restrictions and remaining live verification. Operational wedding endpoints, three finished themes, photo uploads/moderation/exports, family email dispatch and vendor search are not implemented. Add their dependencies when used. The scaffold does not present sample data as real application results.
 
 ## Planning references and decisions
 

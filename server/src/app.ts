@@ -1,3 +1,4 @@
+import type { AccessService } from './modules/access/access.service.js';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
@@ -16,6 +17,7 @@ export interface AppDependencies {
   logger: Logger;
   trustProxy?: boolean;
   clientDirectory?: string;
+  access?: AccessService;
   auth?: { service: AuthService; options: AuthHttpOptions };
 }
 
@@ -50,8 +52,12 @@ export function createApp(dependencies: AppDependencies) {
   api.use('/v1/health', healthRoutes(dependencies.checkReady));
   if (dependencies.auth)
     api.use(
-      '/v1/auth',
-      authRoutes(dependencies.auth.service, dependencies.auth.options),
+      '/v1',
+      authRoutes(
+        dependencies.auth.service,
+        dependencies.auth.options,
+        dependencies.access,
+      ),
     );
   api.use(apiNotFound);
   app.use('/api', api);

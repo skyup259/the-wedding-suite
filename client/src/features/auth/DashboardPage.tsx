@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiClientError } from '../../api/client.js';
 import { logout } from './api.js';
@@ -76,6 +76,13 @@ export function DashboardPage() {
               : 'Website published'}
           </span>
         </section>
+        <p>
+          <Link to="/team">
+            {data.user.role === 'admin'
+              ? 'Manage wedding team'
+              : 'View wedding team'}
+          </Link>
+        </p>
         <section className={styles.nextCard}>
           <h2>You’re all set.</h2>
           <p>

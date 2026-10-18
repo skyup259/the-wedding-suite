@@ -6,51 +6,52 @@ This is the living entry point for a new contributor. It records actual implemen
 
 ## Current milestone
 
-**First feature complete: signup, login, session restoration and logout.**
+**M2 implemented: Manager invitations, team access and password recovery, with durable auth-email processing. Real Atlas checks and the development migration passed; controlled Resend acceptance is pending.**
 
-The owner approved implementation on 18 October 2026. Registration creates one draft wedding and its sole Admin atomically, signs in, and opens a protected dashboard showing real account/wedding details. `/login`, `/signup` and `/dashboard` are available. The private query cache is cleared on logout/account changes, and sessions are restored after refresh.
+The owner approved authentication and then M2 implementation on 18 October 2026. Registration creates one draft wedding and its sole Admin atomically, signs in, and opens a protected dashboard showing real account/wedding details. `/login`, `/signup` and `/dashboard` are available. The private query cache is cleared on logout/account changes, and sessions are restored after refresh.
 
-See [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) for scope and acceptance, and [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) for the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
+See [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 behaviour, configuration and acceptance limits; [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) records the first slice, [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) records the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
 
 ## Confirmed architecture and product decisions
 
-| Area        | Decision                                                                                                                             |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Application | Modular monolith; React/TypeScript/Vite frontend; Express/TypeScript backend                                                         |
-| Repository  | npm workspaces: client, server, shared; ESM; CSS Modules and CSS variables                                                           |
-| Database    | MongoDB Atlas with official driver; separate development/production configuration; no Docker                                         |
-| Access      | Email/password and MongoDB-backed opaque sessions implemented; Admin/Manager accounts belong to one wedding; Guests have no accounts |
-| Production  | Same-origin API and frontend; hosting provider undecided                                                                             |
-| Photos      | Private S3; approved public and private-family views; seven-day access window anchored to main wedding date                          |
-| Exports     | Team exports/downloads allowed before expiry; archive access cannot extend past photo expiry                                         |
-| Publishing  | Preview before first publication; subsequent saved edits become live immediately                                                     |
-| Dates       | One main wedding date anchors retention/slug; events can span multiple dates                                                         |
-| Themes      | Three variants share behaviour/data; final visuals remain to be designed                                                             |
-| Email       | Owner selected Resend for invitation emails; recommend reusing its adapter for account setup/recovery. Provisioning remains pending  |
+| Area        | Decision                                                                                                                                                   |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Application | Modular monolith; React/TypeScript/Vite frontend; Express/TypeScript backend                                                                               |
+| Repository  | npm workspaces: client, server, shared; ESM; CSS Modules and CSS variables                                                                                 |
+| Database    | MongoDB Atlas with official driver; separate development/production configuration; no Docker                                                               |
+| Access      | Email/password and MongoDB-backed opaque sessions implemented; Admin/Manager accounts belong to one wedding; Guests have no accounts                       |
+| Production  | Same-origin API and frontend; hosting provider undecided                                                                                                   |
+| Photos      | Private S3; approved public and private-family views; seven-day access window anchored to main wedding date                                                |
+| Exports     | Team exports/downloads allowed before expiry; archive access cannot extend past photo expiry                                                               |
+| Publishing  | Preview before first publication; subsequent saved edits become live immediately                                                                           |
+| Dates       | One main wedding date anchors retention/slug; events can span multiple dates                                                                               |
+| Themes      | Three variants share behaviour/data; final visuals remain to be designed                                                                                   |
+| Email       | Resend adapter implemented for team setup/recovery; development defaults to private outbox, production disabled until configured; live delivery unverified |
 
 ## Implementation tracker
 
-| Workstream                       | State               | What exists / what remains                                                                                           |
-| -------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Workspace/build configuration    | Complete            | Three packages, explicit shared exports and build-before-consumption scripts                                         |
-| Frontend foundation              | Complete            | Neutral React shell, routing, query provider, typed health request, CSS Modules                                      |
-| Backend foundation               | Complete            | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                           |
-| Shared contracts                 | Complete            | Infrastructure, theme identifiers and strict auth request/safe response schemas                                      |
-| Tests and checks                 | Complete            | 45 credential-free tests, 4 real Atlas integration tests and 1 browser journey passed; full checks passed            |
-| Atlas application connectivity   | Verified            | Readiness/ping verified; auth migration applied; real writes/transactions/indexes tested in isolated Atlas databases |
-| Database schema/migrations/seeds | Auth slice complete | Explicit versioned auth validators/indexes/history; no automatic startup migrations or business seeds                |
-| Authentication and team          | Auth slice complete | Signup/login/logout, opaque sessions, CSRF and limits; Manager setup/recovery remain next                            |
-| Wedding website/events/themes    | Not implemented     | No business endpoints, publication flow, polling or final themes                                                     |
-| Invitations/estimates            | Not implemented     | No RSVP in version-one scope                                                                                         |
-| Expenses/tasks                   | Not implemented     | Exact money, revisions and wedding isolation required when built                                                     |
-| Photos/moderation/exports/jobs   | Not implemented     | Full lifecycle and expiry protection required before enabling                                                        |
-| Vendors/streaming                | Not implemented     | Google Places discovery and YouTube embedding later                                                                  |
-| Deployment                       | Not configured      | Hosting, production Atlas/S3/email and operational policies pending                                                  |
+| Workstream                       | State                     | What exists / what remains                                                                                                            |
+| -------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Workspace/build configuration    | Complete                  | Three packages, explicit shared exports and build-before-consumption scripts                                                          |
+| Frontend foundation              | Complete                  | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                       |
+| Backend foundation               | Complete                  | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                            |
+| Shared contracts                 | Complete                  | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                       |
+| Tests and checks                 | M2 Atlas checks passed    | 76 credential-free tests; 10 real Atlas integration tests; 2 Atlas-backed browser journeys passed; full root check passed             |
+| Atlas application connectivity   | Verified                  | After owner updated network access: real integration/browser checks passed; development readiness returned ready                      |
+| Database schema/migrations/seeds | M2 applied to development | Explicit 001/002 migrations completed in verified development database; no user or wedding seeded                                     |
+| Authentication and team          | M2 Atlas verified         | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain |
+| Wedding website/events/themes    | Not implemented           | No business endpoints, publication flow, polling or final themes                                                                      |
+| Invitations/estimates            | Not implemented           | No RSVP in version-one scope                                                                                                          |
+| Expenses/tasks                   | Not implemented           | Exact money, revisions and wedding isolation required when built                                                                      |
+| Photos/moderation/exports/jobs   | Not implemented           | Full lifecycle and expiry protection required before enabling                                                                         |
+| Vendors/streaming                | Not implemented           | Google Places discovery and YouTube embedding later                                                                                   |
+| Deployment                       | Not configured            | Hosting, production Atlas/S3/email and operational policies pending                                                                   |
 
 ## Latest authentication verification
 
 Verified on 18 October 2026:
 
+- Latest manual QA after the owner's connection fix: development readiness returned `ready` and the browser showed the service connected. Core signup/login/logout, validation, refresh, signed-in redirects, duplicate signup and cross-tab logout passed against built assets with real Atlas in an isolated test database. Persistence inspection found one synthetic user/wedding and zero active sessions after logout; the exact temporary database was removed with awaited cleanup. Two minor validation/feedback issues remain; mobile viewport testing was inconclusive because the browser override did not apply. See [MANUAL_AUTH_QA.md](./MANUAL_AUTH_QA.md) for cases, reproductions and limits. `npm run build` passed for this QA run; previous automated test results below remain historical.
 - `npm run check` passed: formatting, zero-warning lint, root/package TypeScript, 45 tests across eight files, and production build.
 - `npm run test:integration` passed four real Atlas tests: migration idempotency, validators/unique indexes, safe session lifecycle/wedding isolation, rollback after late failure, concurrent duplicate registration and atomic shared rate counters. Integration teardown completed. Two browser-test databases left by interrupted child shutdown were found and explicitly removed; browser cleanup is now also awaited by Playwright global teardown.
 - `npm run test:e2e` passed the complete real browser journey against built assets and a separate temporary Atlas database: anonymous redirect, two-step signup, keyboard step navigation/focus, refresh, logout/private denial, wrong/correct login and mobile viewport without horizontal overflow. Desktop signup/dashboard and mobile login/dashboard screenshots were visually reviewed.
@@ -58,6 +59,32 @@ Verified on 18 October 2026:
 - Existing development services were already listening on ports 5173/3000; an additional combined start exited on the occupied frontend port. Existing services were preserved and verified: direct/proxied readiness 200, anonymous `/auth/me` 401, `/auth/csrf` 200 and `/login` 200. Use `http://127.0.0.1:5173/signup` to create your first account.
 - Final connectivity recheck: the machine’s public IP changed away from the recently approved Atlas entry. A subsequent browser rerun failed during TLS negotiation and local readiness became unavailable. The prior successful feature/integration/browser checks above remain valid historical evidence; final live recheck is pending an updated Active Atlas IP entry. A later browser timeout occurred before this TLS failure; its awaited global cleanup completed.
 - Real production HTTPS cookies/proxy settings, hosting and email remain unverified. No deployment, commit or push performed for this feature.
+
+## M2 verification and limitations
+
+Implemented on 18 October 2026. `/team`, `/accept-invitation`, `/forgot-password` and `/reset-password` are connected to the API. Only Admin can manage access; Managers see their wedding’s team without other accounts’ emails. Resend/revoke and member changes enforce revisions. Acceptance and reset use transactions and single-use expiring tokens; password reset and Manager disablement revoke sessions. The sole Admin/global wedding-isolation rules remain intact.
+
+Email defaults to a private local outbox; the optional Resend adapter requires explicit configuration and non-production recipient restrictions. Durable jobs use encrypted envelopes, leases/version fencing, bounded retries and provider idempotency. Delivery status distinguishes queued/local-outbox/provider-accepted outcomes. Token storage retains the baseline expiry TTL; invitation summaries are not a permanent archive. Live jobs have no TTL, and terminal job/audit metadata policy remains a production prerequisite. See TEAM_RECOVERY.md for operational details and the encrypted-envelope extension to the original hash-only auth-token contract.
+
+Initial M2 implementation checks, before network access was repaired:
+
+- Final `npm run check` passed: formatting, zero-warning lint, root/package TypeScript, 76 credential-free tests across 12 files, and the production build. Tests cover permissions, wedding isolation, link expiry/replacement/single consumption, rollback in a transactional substitute, session revocation, pagination, CSRF/rate limits, encrypted envelopes, provider/outbox adapters and lease/retry fencing. At that initial checkpoint MongoDB semantics still needed separate integration verification; the later repair recheck below completed it.
+- Client suite passed: 13 tests across four files. The new forms validate inputs, scrub fragments, update session state and hide access controls from Managers.
+- `npm run test:e2e:local` passed both browser journeys against built assets, explicit in-memory stores and a private temporary outbox. New coverage includes Manager invite/accept, mobile team pages, password reset, disablement and no horizontal overflow. Desktop team, mobile Admin/Manager team, setup and reset-success screenshots were reviewed. These are real browser/HTTP checks, not real MongoDB verification.
+- `npm run test:integration` could not connect to Atlas: both suites failed during setup and all 10 database tests were skipped. No M2 migration, transaction/index/concurrency validation or development database changes are claimed. No real email, deployment, commit or push was performed.
+- Added a dedicated `test:e2e:local` command without weakening default `test:e2e`/integration requirements. Default browser tests still require real Atlas and use guarded temporary database/outbox cleanup.
+
+The later network-repair recheck below supersedes the initial Atlas blocker. Next: provision/verify Resend with controlled staging recipients and complete the real staging HTTPS/proxy/cookie walkthrough. Only after M2 live acceptance proceed to wedding/events, preview/publication and themes. The earlier manual auth QA notes and their two minor findings were preserved without unrelated fixes.
+
+### Atlas recheck after network repair — 18 October 2026
+
+- Owner added the current network address in Atlas. Independently verified the running development backend readiness before and after the migration; it returned `ready`. The protected team endpoint through the frontend proxy returned the expected anonymous 401.
+- `npm run test:integration` passed all 10 tests across both real Atlas suites: migrations/validators/indexes, token concurrency, transactional rollback, password/session revocation, wedding isolation and abandoned-lease recovery/version fencing. Guarded temporary database cleanup completed.
+- `npm run test:e2e` passed both journeys against built assets, real Atlas persistence and a private temporary outbox, including Manager acceptance, recovery, disablement and mobile layouts. Awaited test database/outbox cleanup completed. Reviewed the resulting mobile Admin team screenshot.
+- The first browser attempt stopped because the generic status locator matched two loading messages. Narrowed only the two Admin success assertions to their message text; the rerun passed. Application permissions/behaviour were unchanged by this test fix.
+- Verified the migration target was development and the expected development database, then `npm run db:migrate` successfully applied 001/002 as needed. The runner reported completion without seeding wedding/user records. Existing development services and records were preserved.
+- Final `npm run check` after the selector/documentation update passed: formatting, zero-warning lint, all package/root types, 76 tests across 12 files and production build. `git diff --check` also passed.
+- No live Resend message, production migration/deployment, Git commit or push was performed. Provider acceptance/delivery and staging production-cookie/proxy behaviour remain unverified; local outbox success is not Resend verification.
 
 ## Historical scaffold verification record
 
@@ -89,8 +116,8 @@ Dependencies are pinned in package manifests and `package-lock.json`. TypeScript
 
 1. Complete durable idempotency request fingerprints, replay records and retention; define precise `If-Match` exceptions per endpoint.
 2. Specify upload capability/session proof fields consistently between database and API designs.
-3. Add durable email-delivery jobs to the job types when implementing setup/recovery messages.
-4. Signup/password and 24-hour absolute session defaults are now implemented; setup/reset lifetimes and recoverable-link encryption-key rotation remain pending.
+3. Auth email jobs and encrypted queued envelopes are implemented; extend the jobs validator deliberately for photo/export work later.
+4. Signup/password, 24-hour sessions, 48-hour Manager setup and one-hour reset defaults are implemented. Queued-email key replacement requires draining/reconciling jobs; automatic key-ring rotation remains absent. Recoverable family/gallery links remain future work.
 5. Choose final theme visuals, HEIC handling, upload limits, provider budgets and retention for audit/job metadata.
 6. Auth schema/write/transaction permissions are verified in Atlas; confirm production region/tier, backups and restoration separately.
 7. Select hosting and configure the selected Resend provider, proxy trust, production regions, S3 policy/lifecycle and monitoring before pilot deployment.
@@ -102,8 +129,8 @@ Recoverable invitation/private-gallery links need a lookup hash plus authenticat
 The detailed plan is now [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). The owner supplied a planning scenario of 31 December 2026, invitations beginning 16 November (45 days earlier), 25 per day, and Resend email invitations. This is not a confirmed actual wedding date. Direct family email dispatch is a newly requested extension to the previous manual WhatsApp baseline; schemas/routes/status semantics must be reconciled before implementation.
 
 1. Owner reviews the completed auth slice locally and handles staging setup: stable CSRF secret, HTTPS origin/proxy trust, explicit migration, then the signup/login/logout smoke journey. Prepare CI separately.
-2. Implement Manager invitations and password recovery next; align Resend contracts, sender domain and controlled development/staging email delivery.
-3. Add Manager setup/recovery and durable Resend email jobs; keep development and staging recipients controlled.
+2. Complete M2 provider acceptance: configure the Resend sender with controlled staging recipients. Atlas integration/default browser checks and the development migration have passed.
+3. Review Manager setup/recovery and durable email behaviour over the real staging HTTPS origin; code/local substitute checks alone do not verify external services.
 4. Build guest website/events, publication and all three themes; add family links, estimates and team-reviewed daily invitation batches for the proposed 16 November release.
 5. Add expenses and tasks, followed by the complete private photo/moderation/export/retention lifecycle.
 6. Add streaming and vendor discovery; complete every version-one pilot scenario before the full release.
@@ -201,6 +228,39 @@ The sequence is a roadmap, not a claim that these features exist. Agree detailed
 - Verification: full `npm run check` passed with 45 tests; four isolated real Atlas integration tests passed; one real desktop/mobile Playwright journey passed, including keyboard navigation. Screenshots reviewed. Added awaited Playwright cleanup after identifying and removing two leftover browser-test databases. A later browser retry encountered changed-IP Atlas TLS rejection; final live recheck remains pending current-IP access. Earlier existing development services returned readiness 200 and expected anonymous auth responses; duplicate dev startup was not kept running.
 - Updated README, API/database implementation notes, auth acceptance and roadmap/status handoff. Preserved UX references and earlier history. No deployment or Git commit/push performed.
 - Next action: owner reviews `/signup` → dashboard → sign out → `/login`, then stage the feature with explicit migration/HTTPS secret settings. Implement account recovery and Manager access with controlled Resend email next.
+
+### 18 October 2026 — Manual authentication QA after connection repair
+
+- Owner reported fixing the database connection. Independently confirmed development readiness and the browser's connected state.
+- Manually exercised the current built application through the existing isolated Atlas test server: signup validations and step navigation, successful registration, session refresh, signed-in redirects, logout, cross-tab logout, browser Back protection, unknown/wrong/correct login and duplicate registration.
+- Confirmed duplicate registration left exactly one synthetic user and wedding, with zero unrevoked sessions after final logout. Stopped only the QA server and awaited guarded cleanup of its exact temporary database; development data/services were preserved.
+- Recorded two minor UX findings in `MANUAL_AUTH_QA.md`: technical missing-date wording and duplicated email-conflict feedback. No application fixes were made.
+- Verification: `npm run build` passed; browser observations and direct isolated persistence counts passed. Mobile override did not apply, so this run does not verify mobile layouts. Earlier automated suite results remain historical; no production verification, deployment, commit or push was performed.
+- Next action: improve the two feedback messages and repeat mobile/device QA before staging acceptance.
+- Documentation check: root `npm run format:check` reported three unrelated access-feature formatting failures (`server/src/modules/access/access.repository.ts`, `server/src/modules/access/access.types.ts`, `shared/src/access.ts`); left those concurrent files untouched. Targeted formatting of the two QA documents passed. Final development readiness remained `ready` after cleanup.
+
+### 18 October 2026 — Manager invitations and password recovery implemented
+
+- Owner authorised M2, then asked to resume after resets. Checked Git state: authentication baseline and in-progress files were present. Preserved the separate manual auth QA document/status history and design references.
+- Added shared access contracts, transactional MongoDB repositories, migration 002, Admin-only Manager invitation/resend/revoke and enable/disable APIs, one-use Manager acceptance and password reset. Added team/setup/recovery screens with local error/loading/empty states, pagination, revision handling and private session-cache updates.
+- Added private outbox/Resend transports, authenticated encrypted queued message envelopes, durable lease/version-fenced jobs, bounded provider-idempotent retries and shutdown handling. Auth-token TTL follows the baseline; existing permissions, wedding isolation and photo retention remain unchanged. Real mail requires explicit configuration; no external messages were sent.
+- Added credential-free HTTP/service/worker/transport/schema/UI checks, six real-Atlas acceptance tests, and a browser team/recovery journey. Added an explicit local substitute browser command; default integration/browser paths still require Atlas.
+- Verification: final `npm run check` passed all 76 tests across 12 files, formatting, zero-warning lint, type checks and production build. Client suite and two local browser journeys passed; screenshots reviewed. Real Atlas integration setup failed before all 10 tests could execute. No development migration, external email, deployment, commit or push performed.
+- Updated README, roadmap, API/database/architecture implementation notes, example configuration and TEAM_RECOVERY.md. Next: real Atlas migration/integration/default-browser checks and controlled Resend staging acceptance.
+
+### 18 October 2026 — Atlas-backed M2 acceptance and development migration
+
+- Owner reported updating Atlas network access. Confirmed development readiness, all 10 real integration tests and both real Atlas browser journeys; test databases/outboxes were cleaned up by guarded teardown.
+- Fixed an ambiguous browser-test selector exposed by slower real database loading: select the intended Admin success status rather than all loading/success statuses. No application behaviour change.
+- Verified the development migration target and applied auth/team-recovery migrations with root `npm run db:migrate`; no business data was seeded. Existing services remained ready, and anonymous proxied team access remained denied (401).
+- Updated the status, README, roadmap and team/recovery guide to distinguish real Atlas success from still-unverified external email/production settings. Final root `npm run check` passed formatting, zero-warning lint, types, all 76 tests and production build; `git diff --check` passed.
+- Next: controlled Resend staging delivery and HTTPS/session/proxy acceptance; then wedding website/events/themes. No real email, production changes, commit or push.
+
+### 18 October 2026 — Owner requested M2 checkpoint and next milestone
+
+- Owner deferred personal feature review and authorised committing/pushing the completed changes, then starting M3. This is not owner acceptance of the deferred UI walkthrough or live Resend delivery.
+- Reviewed the intended working-tree files, kept private environment/outbox/build artifacts excluded, and retained the manual auth QA notes. The latest full root check, 10 real Atlas tests and two Atlas browser journeys remain the validation evidence for this checkpoint.
+- Next: checkpoint M2 on develop, then implement wedding content, ceremonies, private preview/publication and three existing theme variants on a feature branch. No production deployment is included.
 
 ## Update checklist for every development handoff
 

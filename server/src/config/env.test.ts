@@ -53,4 +53,48 @@ describe('environment configuration', () => {
       parseEnvironment({ ...valid, APP_ORIGIN: 'http://localhost:5173/path' }),
     ).toThrow('APP_ORIGIN');
   });
+  it('defaults development to a private outbox and production to disabled email', () => {
+    expect(parseEnvironment(valid).EMAIL_MODE).toBe('outbox');
+    expect(
+      parseEnvironment({
+        ...valid,
+        NODE_ENV: 'production',
+        APP_ORIGIN: 'https://wedding.example',
+        CSRF_SECRET: 'a-stable-secret-at-least-32-characters',
+      }).EMAIL_MODE,
+    ).toBe('disabled');
+  });
+  it('requires sender, key and controlled recipients before non-production Resend delivery', () => {
+    expect(() => parseEnvironment({ ...valid, EMAIL_MODE: 'resend' })).toThrow(
+      'RESEND_API_KEY',
+    );
+    expect(() =>
+      parseEnvironment({
+        ...valid,
+        EMAIL_MODE: 'resend',
+        RESEND_API_KEY: 'synthetic',
+        EMAIL_FROM: 'sender@example.test',
+      }),
+    ).toThrow('EMAIL_ALLOWED_RECIPIENTS');
+    expect(
+      parseEnvironment({
+        ...valid,
+        EMAIL_MODE: 'resend',
+        RESEND_API_KEY: 'synthetic',
+        EMAIL_FROM: 'sender@example.test',
+        EMAIL_ALLOWED_RECIPIENTS: 'test@example.test',
+      }).EMAIL_ALLOWED_RECIPIENTS,
+    ).toEqual(['test@example.test']);
+    expect(() =>
+      parseEnvironment({
+        ...valid,
+        NODE_ENV: 'production',
+        APP_ORIGIN: 'https://wedding.example',
+        CSRF_SECRET: 'a-stable-secret-at-least-32-characters',
+        EMAIL_MODE: 'resend',
+        RESEND_API_KEY: 'synthetic',
+        EMAIL_FROM: 'sender@example.test',
+      }),
+    ).toThrow('EMAIL_ENCRYPTION_KEY');
+  });
 });

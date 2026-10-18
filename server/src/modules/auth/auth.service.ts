@@ -76,7 +76,7 @@ export class AuthService {
     if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
     return this.store.resolve(digest(token), this.now());
   }
-  private session(user: UserRecord, token: string): SessionRecord {
+  session(user: UserRecord, token: string): SessionRecord {
     const now = this.now();
     return {
       _id: new ObjectId(),

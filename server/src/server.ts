@@ -1,3 +1,7 @@
+import { emailRuntime } from './infrastructure/email.js';
+import { MongoAccessStore } from './modules/access/access.repository.js';
+import { AccessService } from './modules/access/access.service.js';
+import { AuthEmailWorker } from './jobs/auth-email.js';
 import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { loadDevelopmentEnvironment } from './config/load-env.js';
@@ -17,6 +21,7 @@ async function start(): Promise<void> {
     config.MONGODB_DB_NAME,
   );
   let shuttingDown = false;
+  let emailWorker: AuthEmailWorker | null = null;
   const app = await Promise.resolve()
     .then(async () => {
       const authStore = new MongoAuthStore(database.client, database.db);
@@ -28,7 +33,31 @@ async function start(): Promise<void> {
         logger.warn(
           'Authentication migrations pending. Run npm run db:migrate before using signup/login.',
         );
+      const email = await emailRuntime(config);
+      const accessStore = new MongoAccessStore(database.client, database.db);
+      const access = email
+        ? new AccessService(
+            accessStore,
+            authService,
+            email.vault,
+            config.APP_ORIGIN,
+            config.MANAGER_INVITE_TTL_SECONDS,
+            config.PASSWORD_RESET_TTL_SECONDS,
+          )
+        : undefined;
+      if (email) {
+        if (!(await accessStore.ready()))
+          logger.warn(
+            'Team/recovery migrations pending. Run npm run db:migrate before using invitations/recovery.',
+          );
+        emailWorker = new AuthEmailWorker(
+          accessStore,
+          email.vault,
+          email.transport,
+        );
+      }
       return createApp({
+        ...(access ? { access } : {}),
         logger,
         trustProxy: config.TRUST_PROXY,
         auth: {
@@ -58,10 +87,14 @@ async function start(): Promise<void> {
     });
   const server = app.listen(config.PORT, () => {
     logger.info({ port: config.PORT }, 'Server started');
+    emailWorker?.start();
   });
   server.on('error', () => {
     logger.error('HTTP listener failed. Check the configured port.');
-    void database.close().finally(() => {
+    void (async () => {
+      await emailWorker?.stop();
+      await database.close();
+    })().finally(() => {
       process.exitCode = 1;
     });
   });
@@ -71,11 +104,14 @@ async function start(): Promise<void> {
     logger.info('Shutting down');
     const timeout = setTimeout(() => {
       process.exit(1);
-    }, 10000);
+    }, 25000);
     timeout.unref();
+    const emailStopped = emailWorker?.stop();
     server.close(() => {
-      void database
-        .close()
+      void (async () => {
+        await emailStopped;
+        await database.close();
+      })()
         .then(() => {
           clearTimeout(timeout);
         })

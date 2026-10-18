@@ -100,7 +100,7 @@ Setup/reset token expiry is checked before atomically consuming it. Reject cross
 
 ### Implemented authentication defaults — 18 October 2026
 
-The first implemented slice is csrf/register/login/me/logout. Recovery and Manager invitation routes above remain planned. Shared executable schemas are exported through `@wedding-suite/shared/auth`.
+The initial csrf/register/login/me/logout slice is implemented. Manager invitations and password recovery are now implemented as M2; see TEAM_RECOVERY.md for setup and live-verification limits. Shared executable schemas are exported through `@wedding-suite/shared/auth`.
 
 - Registration is strict: reject unknown fields including client-supplied role/wedding ownership. Names are trimmed, required, at most 100 characters. Emails are trimmed/lowercased, valid and at most 254 characters; dots/plus tags are preserved. Passwords are 15–128 characters without trimming or composition rules. Login accepts any nonempty password up to 128 characters. Main date is a valid calendar date; timezone must be recognised by the runtime. Theme IDs remain traditional/floral/minimal; the current signup UI defaults to traditional.
 - Register (201), login (200) and me (200) return `{data: {user: {id, displayName, email, role}, wedding: {id, couple, mainDate, timezone, slug, publicationStatus, themeId}}, meta: {requestId}}`. ObjectIds are strings. No password/session hash or raw session token appears in JSON. Register persists a draft wedding/Admin/session/audit record atomically before issuing a cookie. Duplicate email returns 409 `EMAIL_ALREADY_REGISTERED`; invalid fields return 422 `VALIDATION_ERROR` with field paths.
@@ -108,7 +108,7 @@ The first implemented slice is csrf/register/login/me/logout. Recovery and Manag
 - `GET /auth/csrf` returns `{data: {csrfToken}, meta: {requestId}}`. Pre-auth context is a random HttpOnly context cookie, not a user/session database row. All three POST actions require `X-CSRF-Token` and an allowed Origin. Signed double-submit CSRF is bound to that context or the authenticated session hash. Issue/clear operations discard old CSRF context. Session/context cookies use SameSite=Lax; CSRF cookie uses Strict. All are HttpOnly, Path=/ and host-only, with Secure and `__Host-` names in production (`ws_session`, `ws_context`, `ws_csrf` locally).
 - Production Origin must equal `APP_ORIGIN`; HTTP development accepts its localhost/127.0.0.1 alias at the same port. CSRF establishment rejects cross-site Fetch Metadata. CSRF errors are 403 `CSRF_FAILED`. Production requires a stable private `CSRF_SECRET` of at least 32 characters.
 - Fixed-window MongoDB-backed rate limits per 15 minutes: register 5/IP, login 30/IP plus 10/normalised email, CSRF 120/IP. Failed attempts count. Excess returns 429 `RATE_LIMITED` plus `Retry-After`; limits aggregate across server instances. Configure trusted proxies accurately before deployment.
-- API responses are no-store. Auth routes fail closed with 503 `SERVICE_UNAVAILABLE` until the explicit auth migration exists. Unknown API routes stay JSON errors; frontend-only navigation receives the React shell. Detailed account recovery/email flows remain separate work.
+- API responses are no-store. Auth routes fail closed with 503 `SERVICE_UNAVAILABLE` until the explicit auth migration exists. Unknown API routes stay JSON errors; frontend-only navigation receives the React shell. M2 recovery/email details follow below and in TEAM_RECOVERY.md.
 
 ## 3. Team management
 
@@ -122,6 +122,19 @@ The first implemented slice is csrf/register/login/me/logout. Recovery and Manag
 | PATCH `/team/:userId` | A | `{status: "active" | "disabled"}`; 200 updated Manager |
 
 Team invitation responses expose a revision for conditional resend/revoke. Disabled Managers lose existing session access. The sole Admin cannot be disabled through this interface. Role transfer and multi-Admin management are outside version one.
+
+### M2 implementation contract — 18 October 2026
+
+- Team/recovery requires migration `002-team-recovery` and enabled email. Disabled email or an unapplied migration returns 503. Team reads derive wedding scope exclusively from the authenticated account. Admin mutation authority is checked again inside the transaction.
+- Invitations default to 48 hours; password reset defaults to one hour. Both are random 32-byte lowercase hex tokens, accepted only in API request bodies. Browser email links use `/accept-invitation#token=…` or `/reset-password#token=…`; the fragment is scrubbed after reading and is not persisted in browser storage. Reopen the original link after refreshing its scrubbed page.
+- Reset request returns 202 `{message}` identically for active/disabled/unknown emails. New requests invalidate prior reset links. Confirm returns 204, changes the password once, revokes all target-account sessions and clears the current browser session. Manager acceptance returns the existing safe identity envelope with a new cookie (201). Existing accounts cannot be moved/reassigned by invitation. Invalid/used/replaced/revoked links return 400 `INVALID_SETUP_LINK`; a retained expired token returns 410 `SETUP_LINK_EXPIRED`.
+- Rate limits per 15 minutes: reset request 10/IP and 3/normalised email; reset confirm 20/IP; Manager accept 20/IP; Admin invite and resend each 20/Admin. All use the existing shared MongoDB counters. Public request limits apply equally to unknown accounts.
+- Team list items: `id, displayName, role, status, revision`, plus email only for Admin. Invitation list items: `id, email, displayName|null, status, expiresAt, revision, delivery`. No raw token, hash or encrypted message is returned. Lists support limit (20 default, 100 maximum), scope-bound cursor and `meta.nextCursor/hasMore`.
+- Create invitation returns 201 `{id, revision, status:"pending", delivery:"queued"}`. An existing pending invitation returns 409 `INVITATION_EXISTS`; an existing account returns 409 `ACCOUNT_ALREADY_ASSIGNED`. Resend returns 202 `{id,revision,delivery:"queued"}` and replaces the link. Revoke returns 204. Member PATCH returns the updated safe member. Mutation responses with a revision include ETag; resend/revoke/PATCH require `If-Match` (428 missing, 412 stale).
+- Reset request/confirm and Manager accept are explicit exceptions to resource `If-Match`: they are pre-authentication/capability exchanges with transactional token consumption, not editable revision-controlled resources. Create invitation uses duplicate-conflict handling, not implicit email resend on retry.
+- Invitation status is pending/expired/used/revoked while its auth-token record is retained. The baseline expiry TTL eventually removes these summaries; they are not a permanent history archive. Delivery is queued/running/accepted/outbox/failed/cancelled. Accepted means provider acceptance only; outbox means a local message, never external dispatch.
+- Only Admin controls access. Disable/re-enable increments the Manager’s session version, revokes old sessions/reset capabilities, and never restores an old session. The sole Admin cannot be disabled. Invitation mutations/acceptance/reset and status changes record transactional audit entries.
+
 
 ## 4. Wedding, website and dashboard
 

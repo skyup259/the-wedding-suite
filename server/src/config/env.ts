@@ -18,6 +18,35 @@ const envSchema = z
       .min(300)
       .max(604800)
       .default(86400),
+    EMAIL_MODE: z.enum(['outbox', 'resend', 'disabled']).default('outbox'),
+    EMAIL_ENCRYPTION_KEY: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    EMAIL_FROM: z.email().optional(),
+    EMAIL_ALLOWED_RECIPIENTS: z
+      .string()
+      .default('')
+      .transform((value) =>
+        value
+          .split(',')
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.email())),
+    MANAGER_INVITE_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(604800)
+      .default(172800),
+    PASSWORD_RESET_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(7200)
+      .default(3600),
     CSRF_SECRET: z.string().min(32).max(512).optional(),
     APP_ORIGIN: z.url().refine((value) => {
       const url = new URL(value);
@@ -46,6 +75,41 @@ const envSchema = z
       ),
   })
   .superRefine((value, context) => {
+    if (value.NODE_ENV === 'production' && value.EMAIL_MODE === 'outbox')
+      context.addIssue({
+        code: 'custom',
+        path: ['EMAIL_MODE'],
+        message: 'Production requires resend or disabled.',
+      });
+    if (
+      value.NODE_ENV === 'production' &&
+      value.EMAIL_MODE === 'resend' &&
+      !value.EMAIL_ENCRYPTION_KEY
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['EMAIL_ENCRYPTION_KEY'],
+        message: 'Production requires a stable email encryption key.',
+      });
+    if (value.EMAIL_MODE === 'resend') {
+      for (const field of ['RESEND_API_KEY', 'EMAIL_FROM'] as const)
+        if (!value[field])
+          context.addIssue({
+            code: 'custom',
+            path: [field],
+            message: 'Required for Resend.',
+          });
+      if (
+        value.NODE_ENV !== 'production' &&
+        !value.EMAIL_ALLOWED_RECIPIENTS.length
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['EMAIL_ALLOWED_RECIPIENTS'],
+          message: 'Restrict non-production delivery.',
+        });
+    }
+
     if (value.NODE_ENV === 'production' && !value.CSRF_SECRET)
       context.addIssue({
         code: 'custom',
@@ -69,7 +133,12 @@ export type Environment = z.infer<typeof envSchema>;
 export function parseEnvironment(
   input: Record<string, string | undefined>,
 ): Environment {
-  const result = envSchema.safeParse(input);
+  const result = envSchema.safeParse({
+    ...input,
+    EMAIL_MODE:
+      input.EMAIL_MODE ??
+      (input.NODE_ENV === 'production' ? 'disabled' : 'outbox'),
+  });
   if (!result.success) {
     // Report only field names: validation diagnostics must not print credentials.
     const fields = [
