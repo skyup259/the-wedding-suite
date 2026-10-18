@@ -394,3 +394,10 @@ Wedding/event/audit mutations use MongoDB transactions, revalidate/write-lock th
 Date/timezone changes recalculate authoritative photoExpiryAt and increment retentionVersion when changed, without rewriting event instants. Access extension is blocked after cleanup may have started (running/complete/failed); no date change restores deleted bytes. Published slug locks survive unpublication. Before first publication, unrelated saves preserve signup collision suffixes; actual name/date changes may regenerate the draft address with uniqueness enforcement.
 
 This section records the implemented data path, not a claim that a production migration or deployment occurred. See PROJECT_STATUS.md for test results and development migration state.
+
+
+## M4A implementation notes — 18 October 2026
+
+Migration 004 implements invitations with distinct same-wedding active selections, Sent timestamp consistency, archive history, unique token hashes and wedding-scoped list/filter indexes. Recoverable AES-256-GCM tokenCiphertext uses tokenKeyVersion 1 and a separate INVITATION_ENCRYPTION_KEY outside MongoDB; AAD binds wedding/record/tokenVersion. No invitation TTL or photo-expiry coupling is added. General API reads exclude both hashes and ciphertext; explicit authorised sharing reconstructs the link. Automatic encryption-key rotation and metadata retention remain operational follow-ups.
+
+Every invitation mutation rechecks/locks actor authority and writes the record/audit transactionally. Internal weddings.invitationWriteVersion serializes invitation selection with ceremony archive/publication writes; it does not increment the wedding editor revision. Archived event references remain historical while personal highlights and event estimates exclude archived events. Counts aggregate unique active Sent invitation records, not the sum of ceremony counts. See INVITATIONS_IMPLEMENTATION.md for exact limits and verification status. Family email/contact-email/dispatch records remain future M4B migrations.

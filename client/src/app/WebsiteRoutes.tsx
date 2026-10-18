@@ -20,6 +20,30 @@ const PreviewPage = lazy(() =>
     default: m.PreviewPage,
   })),
 );
+const InvitationsPage = lazy(() =>
+  import('../features/invitations/InvitationsPage.js').then((m) => ({
+    default: m.InvitationsPage,
+  })),
+);
+const PersonalInvitationPage = lazy(() =>
+  import('../features/invitations/PersonalInvitationPage.js').then((m) => ({
+    default: m.PersonalInvitationPage,
+  })),
+);
+export function InvitationsRoute() {
+  return (
+    <Pending>
+      <InvitationsPage />
+    </Pending>
+  );
+}
+export function PersonalInvitationRoute() {
+  return (
+    <Pending>
+      <PersonalInvitationPage />
+    </Pending>
+  );
+}
 function Pending({ children }: { children: ReactNode }) {
   return (
     <Suspense

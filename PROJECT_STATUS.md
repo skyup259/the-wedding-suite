@@ -6,11 +6,13 @@ This is the living entry point for a new contributor. It records actual implemen
 
 ## Current milestone
 
-**M3 implemented and verified locally with Atlas; QA publication-return cache fix implemented. M2 is pushed; owner walkthroughs, staging/production and controlled Resend acceptance remain pending.**
+**M4A manual family invitations implemented and verified locally with Atlas; migration 004 applied to development. M3 is pushed as `3c68675`; Owner manual QA approved M4A for a GitHub Desktop checkpoint. Deferred Low/P3 bugs, M4B email dispatch and staging/production acceptance remain pending.**
 
 The owner approved authentication and then M2 implementation on 18 October 2026. Registration creates one draft wedding and its sole Admin atomically, signs in, and opens a protected dashboard showing real account/wedding details. `/login`, `/signup` and `/dashboard` are available. The private query cache is cleared on logout/account changes, and sessions are restored after refresh.
 
 See [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md) for M3 behaviour/scope and [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 configuration/acceptance limits; [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) records the first slice, [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) records the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
+
+Deferred findings are tracked in [BUG_BACKLOG.md](./BUG_BACKLOG.md), with severity, priority, reproduction steps, causes and acceptance criteria. QA gaps and release prerequisites are recorded separately from confirmed bugs. The owner requested documentation now and fixes later; these three minor findings do not block unrelated development.
 
 ## Confirmed architecture and product decisions
 
@@ -30,22 +32,22 @@ See [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md) for M3 behaviour/sc
 
 ## Implementation tracker
 
-| Workstream                       | State                     | What exists / what remains                                                                                                                 |
-| -------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Workspace/build configuration    | Complete                  | Three packages, explicit shared exports and build-before-consumption scripts                                                               |
-| Frontend foundation              | Complete                  | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                            |
-| Backend foundation               | Complete                  | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                                 |
-| Shared contracts                 | Complete                  | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                            |
-| Tests and checks                 | M3 checks passed          | Latest root check: 101 tests across 15 files plus formatting/lint/types/build; prior 15 Atlas tests and three Atlas journeys passed        |
-| Atlas application connectivity   | Verified                  | After owner updated network access: real integration/browser checks passed; development readiness returned ready                           |
-| Database schema/migrations/seeds | M3 applied to development | Explicit 001/002/003 migrations completed in verified development database; no business data seeded                                        |
-| Authentication and team          | M2 Atlas verified         | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain      |
-| Wedding website/events/themes    | M3 Atlas verified         | Settings, event edits/archive, announcement, private preview, publish/unpublish, three themes, live guest refresh and safe social metadata |
-| Invitations/estimates            | Not implemented           | No RSVP in version-one scope                                                                                                               |
-| Expenses/tasks                   | Not implemented           | Exact money, revisions and wedding isolation required when built                                                                           |
-| Photos/moderation/exports/jobs   | Not implemented           | Full lifecycle and expiry protection required before enabling                                                                              |
-| Vendors/streaming                | Not implemented           | Google Places discovery and YouTube embedding later                                                                                        |
-| Deployment                       | Not configured            | Hosting, production Atlas/S3/email and operational policies pending                                                                        |
+| Workstream                       | State                      | What exists / what remains                                                                                                                 |
+| -------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Workspace/build configuration    | Complete                   | Three packages, explicit shared exports and build-before-consumption scripts                                                               |
+| Frontend foundation              | Complete                   | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                            |
+| Backend foundation               | Complete                   | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                                 |
+| Shared contracts                 | Complete                   | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                            |
+| Tests and checks                 | M4A checks passed          | Latest root check: 119 tests across 19 files plus formatting/lint/types/build; 20 Atlas tests and four Atlas browser journeys passed       |
+| Atlas application connectivity   | Verified                   | After owner updated network access: real integration/browser checks passed; development readiness returned ready                           |
+| Database schema/migrations/seeds | M4A applied to development | Explicit 001/002/003/004 migrations completed in verified development database; no business data seeded                                    |
+| Authentication and team          | M2 Atlas verified          | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain      |
+| Wedding website/events/themes    | M3 Atlas verified          | Settings, event edits/archive, announcement, private preview, publish/unpublish, three themes, live guest refresh and safe social metadata |
+| Invitations/estimates            | M4A Atlas verified         | Families, personal links, manual sharing/Sent state and unique estimates verified; M4B email pending                                       |
+| Expenses/tasks                   | Not implemented            | Exact money, revisions and wedding isolation required when built                                                                           |
+| Photos/moderation/exports/jobs   | Not implemented            | Full lifecycle and expiry protection required before enabling                                                                              |
+| Vendors/streaming                | Not implemented            | Google Places discovery and YouTube embedding later                                                                                        |
+| Deployment                       | Not configured             | Hosting, production Atlas/S3/email and operational policies pending                                                                        |
 
 ## Latest authentication verification
 
@@ -105,6 +107,22 @@ Independent manual QA follow-up: the owner's publication fix passed against the 
 
 Next: remaining minor validation/guard wording, mobile/focus-return QA and controlled staging/provider acceptance, then M4 family records, selected-event personal links, manual sharing and unique-family estimates; reconcile email-batch semantics before enabling real family dispatch.
 
+## M4A verification and limits
+
+Implemented locally on 18 October 2026 after the owner requested the next feature. See [INVITATIONS_IMPLEMENTATION.md](./INVITATIONS_IMPLEMENTATION.md). `/invitations` supports family creation/edit/archive, filters/pagination, selected ceremonies, stable encrypted personal links, explicit link replacement, WhatsApp/copy sharing and manual Sent state. Both team roles are allowed. Estimates count each active Sent family once with a 2–3-person range; selected ceremonies are highlights, never guest access restrictions. No RSVP or email dispatch is enabled.
+
+- Root `npm run check` passed: formatting, zero-warning lint, root/package types, 119 tests across 19 files and production build. New contracts/encryption/HTTP/UI tests cover strict selection, failed-save retention, stale revisions, key authentication, link lifecycle, generic capability errors, Sent/estimate rules and wedding isolation. A new test exposed a Zod default leaking into partial patches; corrected the patch schema so a contact-only edit preserves omitted phone data and an empty patch remains invalid.
+- Atlas integration suite passed 20 tests across four suites, including migration 004 validators/indexes, recoverable links, Sent/event estimates, archive invalidation, late-audit rollback, competing revisions, current Manager authority and the create-invitation-versus-archive race. Initial sandbox attempts could not open HTTP listeners or contact Atlas; checks with the necessary local/network access passed. Sandbox failures do not establish Atlas or product failures.
+- `npm run test:e2e` passed all four real Atlas browser journeys, including family create/share/mark-Sent/re-share/rotate/archive, private-contact omission, complete schedule, token scrubbing/reopening and mobile overflow. The final invitation-only browser rerun also passed after moving selected venues/contacts to the top and labelling the full schedule. Reviewed desktop sharing and mobile team/personal-page screenshots. Both test database and outbox cleanup completed.
+- Initial browser failures were resolved: a read-only textarea selector was corrected; a real rotation-response/client-contract mismatch was fixed with a dedicated shared response schema and regression test. A missing clipboard API now offers manual selection/copy fallback. No real external WhatsApp action was triggered.
+- Strengthened the Atlas race check to use separate Admin and Manager accounts, proving the parent wedding write fence rather than same-user serialization; the targeted five-test Atlas suite passed. Migration 004 idempotency and the earlier full 20-test result remain recorded separately.
+- Verified the migration target was development and the expected development database, then root `npm run db:migrate` completed migrations 001–004 as needed, seeding no wedding/family/contact records. Final live checks outside the network sandbox: backend readiness returned ready and anonymous proxied `/invitations` returned 401. Existing development services/config/data were preserved.
+- Separate INVITATION_ENCRYPTION_KEY protects recoverable capabilities; development uses an ignored private local key, production invitations fail closed until configured. Keys must be backed up separately. No automatic key-ring rotation, invitation restore, metadata-retention policy, provider delivery or production acceptance is claimed.
+- General reads exclude capability material; public invitation reads exclude private contacts and are rate limited/no-store/no-referrer/noindex. The personal-page token is scrubbed and held only in component memory; reopening the original link is required after refresh. Confirmed invalidation hides cached family content. A parent wedding write fence serializes selection with ceremony archive without changing the settings content revision.
+- M4A is approved for a commit/push checkpoint on the existing feature branch; Git history records its resulting revision. Preserve BUG_BACKLOG.md and the deferred minor findings; no unrelated fixes are included. Next: agree M4B batch initiation/Sent/delivery/resend policy and controlled provider acceptance before live email.
+
+Independent M4A manual QA on 18 October: browser family creation/validation/edit/search/filters, sharing/copy, selected personal highlights/full schedule, Sent/unique estimates, conflict retention/reload, replacement, referenced ceremony archive and family archive passed on an isolated real Atlas database. Load more expanded 20 cards to all 24. All 17 supplementary HTTP scenarios and five targeted invitation component tests passed; root build passed. No new functional defect was confirmed in the exercised cases. See [MANUAL_M4A_QA.md](./MANUAL_M4A_QA.md) for exact methods and limits. WhatsApp URL/prefill was verified without actual sending; mobile and production/provider acceptance remain separate. Exact temporary database/outbox cleanup completed, and development readiness remained ready.
+
 ## Historical scaffold verification record
 
 Verified on 18 October 2026 using Node.js 24.21.0 and npm 11.19.0:
@@ -150,7 +168,7 @@ The detailed plan is now [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). The
 1. Owner reviews the completed auth slice locally and handles staging setup: stable CSRF secret, HTTPS origin/proxy trust, explicit migration, then the signup/login/logout smoke journey. Prepare CI separately.
 2. Complete M2 provider acceptance: configure the Resend sender with controlled staging recipients. Atlas integration/default browser checks and the development migration have passed.
 3. Review Manager setup/recovery and durable email behaviour over the real staging HTTPS origin; code/local substitute checks alone do not verify external services.
-4. M3 guest website/events/publication/themes are implemented. Next, agree M4 details and add family links/estimates/manual sharing; controlled email dispatch needs the outstanding provider/batch acceptance.
+4. M3 and M4A manual family invitations/estimates are implemented and verified. Next: owner reviews M4A, then agree M4B batch initiation, Sent/delivery and resend policy; controlled email dispatch requires the outstanding provider/staging acceptance.
 5. Add expenses and tasks, followed by the complete private photo/moderation/export/retention lifecycle.
 6. Add streaming and vendor discovery; complete every version-one pilot scenario before the full release.
 7. Stabilise before the hypothetical wedding, monitor during it and verify post-wedding cleanup. Target dates are conditional on capacity and acceptance checks, not guarantees.
@@ -321,6 +339,37 @@ The sequence is a roadmap, not a claim that these features exist. Agree detailed
 - Owner approved committing and pushing M3 on `feature/wedding-website-events` using GitHub Desktop. The checkpoint includes wedding settings, ceremonies, preview/publication, guest themes, the publication-return cache regression fix, implementation documentation and the manual M2/M3 QA report.
 - Re-ran root `npm run check`: passed formatting, zero-warning lint, root/package types, 101 tests across 15 files and the production build. `git diff --check` passed. Previous Atlas/browser results remain historical; they were not rerun for this Git-only handoff.
 - No production deployment, live email, permissions or scope changes. Remaining minor QA findings and provider/staging acceptance are preserved above and in MANUAL_M2_M3_QA.md. Next: complete those acceptance items, then agree M4 details. Git history and the remote branch record the resulting commit/push outcome.
+
+### 18 October 2026 — Deferred bug backlog documented
+
+- Owner requested documenting the noncritical findings for later review instead of fixing them. Added BUG_BACKLOG.md and a README link: three open Low/P3 bugs, known versus unconfirmed causes, reproduction/workaround/acceptance details and the verified publication regression retained as closed history.
+- Recorded pending QA, CI and external-service/operational acceptance separately; untested scenarios are not labelled as product defects. Confirmed the duplicate-email rendering path by code inspection. No application fix, permission, retention or product-scope change.
+- Recorded the completed M3 GitHub Desktop checkpoint: commit `3c68675` pushed to `origin/feature/wedding-website-events`. Preserved earlier history and its verification limits.
+- Documentation checks: root `npm run format:check` and `git diff --check` passed. Application/Atlas/browser/provider checks were not rerun for this documentation change. Next: review deferred items when scheduled; agree M4 family/invitation details independently, retaining staging/provider acceptance before live release.
+
+### 18 October 2026 — M4A manual family invitations implemented and verified
+
+- Added shared invitation contracts, explicit migration 004, wedding-scoped MongoDB persistence and transactional authority/revision/audit handling. Separate version-bound authenticated encryption permits stable re-sharing without exposing capability material in normal reads. The parent wedding fence serializes selections with ceremony archive across distinct team members.
+- Added `/invitations` with family/contact editing, selected active ceremonies, literal search, filters/cursors, share/copy/WhatsApp actions, manual Sent tracking, confirmed rotation/archive and unique 2–3-person estimates. Personal invitation pages show selected dates/venues/contacts first and the full schedule below; capabilities stay in memory, with scrubbed addresses, generic invalidation and private-contact omission.
+- Verification: full root check passed 119 tests across 19 files, formatting/zero-warning lint/types/build; real Atlas integration passed 20 tests; all four Atlas browser journeys passed. Final presentation-specific browser rerun and the strengthened five-test Atlas suite (Admin/Manager archive race) passed. Reviewed desktop/mobile screenshots and awaited temporary database/outbox cleanup. Fixed the new partial-patch default and rotation contract issues exposed during implementation; preserved all deferred prior bugs.
+- Applied migrations 001–004 through the root command to the verified development target, without seeding business records. Final backend readiness was ready; anonymous proxied invitation access returned 401. Sandbox-blocked initial attempts are distinguished from actual successful external checks above.
+- Updated README, API/database/architecture/roadmap notes and INVITATIONS_IMPLEMENTATION.md. Root formatting and diff checks passed for the final handoff. No real email/WhatsApp dispatch, production deployment, new commit or push. Next: owner QA of M4A, then agree M4B email policy/provider acceptance; maintain BUG_BACKLOG.md for later polish.
+
+### 18 October 2026 — Independent manual families/invitations QA completed
+
+- Tested the current local M4A working tree on feature/wedding-website-events with built assets, real isolated Atlas persistence and synthetic weddings/families. Exercised the complete Admin family/share/Sent/link-replacement/archive journey and reference-aware ceremony archive integration. No owner wedding was populated or published.
+- Verified two overlapping Sent families count once each: 4–6 overall, with correct per-ceremony ranges; unsent families and re-sharing did not inflate counts. Not sent and archive removed contributions. Private contacts were omitted from personal views/messages, and old/archived links failed.
+- Verified stale family edits retain entries and explicit reload recovers them; literal/contact search, Sent/ceremony filters, no-match state and browser Load more over 24 families passed. Supplementary HTTP checks covered Manager authority, cross-wedding/anonymous denial, private headers/projections, stable sentAt, selection/revision boundaries and scoped pagination.
+- Checks actually run: root build passed, targeted invitation client suite passed five tests, and 17 supplementary HTTP scenarios passed. Historical full-suite/Atlas integration/automated browser results remain separate. No new functional defect confirmed; no application fix, migration to development, commit/push or deployment performed.
+- Recorded MANUAL_M4A_QA.md with methods/limits. Desktop only; actual WhatsApp dispatch, mobile/device and provider/production acceptance were not performed. Preserved deferred bugs and design references. Stopped only the isolated QA server and awaited exact database/outbox cleanup; final owner development readiness returned ready.
+- Next: owner reviews QA results, completes outstanding device/operational acceptance and agrees M4B policy before email dispatch.
+- Updated QA-006 backlog evidence for the verified family/reference cases. Documentation validation: root `npm run format:check` and `git diff --check` passed for the QA handoff.
+
+### 18 October 2026 — Owner M4A acceptance and GitHub Desktop checkpoint
+
+- Owner confirmed manual QA verified M4A and the feature works, and explicitly requested commit/push through GitHub Desktop. This acceptance covers the implemented manual-sharing slice; family email dispatch and production/provider acceptance remain separate.
+- Reviewed the pending implementation, migration, contracts, tests and documentation, including MANUAL_M4A_QA.md and BUG_BACKLOG.md. Re-ran root `npm run check`: formatting, zero-warning lint, root/package types, all 119 tests across 19 files and production build passed. Final documentation formatting and `git diff --check` passed; Atlas/browser suites were not rerun for this Git-only handoff.
+- Prepared the approved checkpoint on `feature/wedding-website-events`. Git history and the remote branch record the resulting commit/push outcome. No production deployment, real email/WhatsApp dispatch or deferred-bug fix is included. Next: agree M4B sending policy and controlled staging/provider acceptance.
 
 ## Update checklist for every development handoff
 

@@ -306,3 +306,8 @@ No further product decision is needed to begin technical design within this base
 ## M2 email foundation — 18 October 2026
 
 Manager setup/recovery and the first durable `auth_email` worker are implemented. Resend is the selected adapter; sender/domain provisioning and real delivery remain unverified. Development uses a private local outbox by default; production email is disabled until explicitly configured. MongoDB jobs use leases, version fencing, bounded retries and a stable provider idempotency key. Queued email envelopes are separately authenticated/encrypted and cleared on terminal outcomes; identity-token storage remains hash-only. No queue service, family campaign dispatch, photo worker or production deployment has been added. See TEAM_RECOVERY.md and PROJECT_STATUS.md for configuration and verification limits.
+
+
+## M4A manual invitation foundation — 18 October 2026
+
+The invitation module now supports family records, selected ceremony highlights, recoverable personal links, manual WhatsApp/copy sharing, manual Sent tracking and unique-family estimates. Both team roles manage operational records; personal capabilities grant no management/gallery permissions and return only the family greeting plus the full safe guest model. Separate invitation encryption keys remain outside MongoDB, with hash lookup and version-bound authenticated ciphertext. Invitation mutations and audit entries share a transaction; a parent wedding write fence coordinates selections with ceremony archive. See INVITATIONS_IMPLEMENTATION.md and PROJECT_STATUS.md for exact contracts, verification and operating limits. M4B family email dispatch and its policy/provider acceptance remain pending; no new job type or scheduler is enabled.

@@ -9,7 +9,13 @@ import { WorkspaceFrame, QueryFailure } from './WorkspaceFrame.js';
 import { statusLabel } from './calendar.js';
 import * as api from './api.js';
 import styles from './website.module.css';
-export function GuestView({ model }: { model: GuestModel }) {
+export function GuestView({
+  model,
+  invitation,
+}: {
+  model: GuestModel;
+  invitation?: { familyDisplayName: string; selectedEventIds: string[] };
+}) {
   const { wedding: w, events, today } = model;
   const day = (instant: string) =>
     new Intl.DateTimeFormat('en-IN', {
@@ -30,6 +36,7 @@ export function GuestView({ model }: { model: GuestModel }) {
     year: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(w.mainDate + 'T12:00:00Z'));
+  const CoupleHeading = invitation ? 'h2' : 'h1';
   return (
     <div
       className={styles.guest}
@@ -46,16 +53,61 @@ export function GuestView({ model }: { model: GuestModel }) {
         </nav>
       </header>
       <main>
+        {invitation && (
+          <section className={styles.welcome} aria-label="Personal invitation">
+            <p className={styles.eyebrow}>A personal invitation</p>
+            <h1>Dear {invitation.familyDisplayName},</h1>
+            <p>You and your family are invited to attend these events.</p>
+            {invitation.selectedEventIds.length ? (
+              <>
+                <p>Your invitation highlights:</p>
+                <ul className={styles.invitedList}>
+                  {events
+                    .filter((e) => invitation.selectedEventIds.includes(e.id))
+                    .map((e) => (
+                      <li key={e.id}>
+                        <a href={`#ceremony-${e.id}`}>{e.name}</a> ·{' '}
+                        {day(e.startAt)}, {time(e.startAt)} ({w.timezone})
+                        <p>
+                          <strong>
+                            {e.venue.name || 'Venue to be announced'}
+                          </strong>
+                          <br />
+                          {e.venue.address}
+                        </p>
+                        <div className={styles.contacts}>
+                          {e.contacts.map((contact, index) => (
+                            <a
+                              key={index}
+                              href={`tel:${contact.phone.replace(/[^+0-9]/g, '')}`}
+                            >
+                              Call {contact.name}
+                            </a>
+                          ))}
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </>
+            ) : (
+              <p>
+                The ceremony selection has changed. Please see the full schedule
+                below.
+              </p>
+            )}
+            <p>The full wedding schedule is open to every guest.</p>
+          </section>
+        )}
         <section id="welcome" className={styles.hero}>
           <div className={styles.ornament} aria-hidden="true">
             ✳
           </div>
           <p className={styles.eyebrow}>Together with our families</p>
-          <h1>
+          <CoupleHeading>
             <span>{w.couple.partner1Name}</span>
             <em>&</em>
             <span>{w.couple.partner2Name}</span>
-          </h1>
+          </CoupleHeading>
           <p className={styles.date}>{mainDate}</p>
           {w.website.intro && <p className={styles.intro}>{w.website.intro}</p>}
           <a className={styles.guestButton} href="#schedule">
@@ -117,7 +169,9 @@ export function GuestView({ model }: { model: GuestModel }) {
         </section>
         <section id="schedule" className={styles.schedule}>
           <p className={styles.eyebrow}>Every moment, together</p>
-          <h2>The wedding celebrations</h2>
+          <h2>
+            {invitation ? 'Full wedding schedule' : 'The wedding celebrations'}
+          </h2>
           <p className={styles.muted}>
             All times in {w.timezone}. The full schedule is open to every guest.
           </p>
@@ -142,6 +196,9 @@ export function GuestView({ model }: { model: GuestModel }) {
                   <span className={styles.status} data-status={e.status}>
                     {statusLabel(e.status)}
                   </span>
+                  {invitation?.selectedEventIds.includes(e.id) && (
+                    <p className={styles.eyebrow}>You're invited</p>
+                  )}
                   <h3>{e.name}</h3>
                   {e.description && <p>{e.description}</p>}
                   <p>

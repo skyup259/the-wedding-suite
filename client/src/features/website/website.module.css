@@ -231,14 +231,14 @@
   outline: 1px solid var(--line);
   outline-offset: -12px;
 }
-.hero h1 {
+.hero :is(h1, h2) {
   display: flex;
   flex-direction: column;
   font-size: clamp(3rem, 8vw, 6rem);
   line-height: 1.05;
   margin: 2rem 0;
 }
-.hero h1 em {
+.hero :is(h1, h2) em {
   font-size: 2.5rem;
   line-height: 1.5;
   color: var(--guest-accent);
@@ -273,7 +273,7 @@
   margin: 0 auto 5rem;
   padding: 0 1.5rem;
 }
-.welcome h2 {
+.welcome :is(h1, h2) {
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.25;
 }
@@ -424,7 +424,7 @@
   text-align: left;
   margin-top: 1rem;
 }
-.guest[data-theme='minimal'] .hero h1 {
+.guest[data-theme='minimal'] .hero :is(h1, h2) {
   font-family: var(--font-body);
   font-weight: 300;
   letter-spacing: -0.04em;
@@ -432,7 +432,7 @@
 .guest[data-theme='minimal'] .ornament {
   display: none;
 }
-.guest[data-theme='minimal'] .hero h1 em {
+.guest[data-theme='minimal'] .hero :is(h1, h2) em {
   font: 300 3rem var(--font-body);
 }
 .guest[data-theme='minimal'] .intro {
@@ -488,7 +488,7 @@
     margin: 1.5rem 1.1rem 3rem;
     padding: 2.5rem 1.2rem 3rem;
   }
-  .hero h1 {
+  .hero :is(h1, h2) {
     font-size: clamp(2.6rem, 13vw, 4.5rem);
   }
   .welcome {
@@ -535,4 +535,19 @@
   .guestFooter p {
     font-size: 1.3rem;
   }
+}
+
+.invitedList {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.invitedList li {
+  border: 1px solid var(--guest-accent);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.invitedList .contacts {
+  justify-content: center;
 }

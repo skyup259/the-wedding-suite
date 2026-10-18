@@ -1,3 +1,5 @@
+import { invitationPublicRoutes } from './modules/invitations/invitations.routes.js';
+import type { InvitationService } from './modules/invitations/invitations.service.js';
 import { websitePublicRoutes } from './modules/website/website.public.js';
 import type { WebsiteService } from './modules/website/website.service.js';
 import type { AccessService } from './modules/access/access.service.js';
@@ -21,6 +23,7 @@ export interface AppDependencies {
   clientDirectory?: string;
   access?: AccessService;
   website?: WebsiteService;
+  invitations?: InvitationService;
   auth?: { service: AuthService; options: AuthHttpOptions };
 }
 
@@ -53,6 +56,14 @@ export function createApp(dependencies: AppDependencies) {
   });
   api.use(express.json({ limit: '64kb' }));
   api.use('/v1/health', healthRoutes(dependencies.checkReady));
+  if (dependencies.invitations && dependencies.auth)
+    api.use(
+      '/v1/public',
+      invitationPublicRoutes(
+        dependencies.invitations,
+        dependencies.auth.service,
+      ),
+    );
   if (dependencies.website)
     api.use('/v1/public', websitePublicRoutes(dependencies.website));
   if (dependencies.auth)
@@ -63,6 +74,7 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.auth.options,
         dependencies.access,
         dependencies.website,
+        dependencies.invitations,
       ),
     );
   api.use(apiNotFound);

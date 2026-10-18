@@ -1,4 +1,6 @@
 import {
+  InvitationsRoute,
+  PersonalInvitationRoute,
   WebsiteRoute,
   EventsRoute,
   GuestRoute,
@@ -76,6 +78,16 @@ export const router = createBrowserRouter([
       </AccessGate>
     ),
   },
+  {
+    path: '/invitations',
+    element: (
+      <AccessGate>
+        <InvitationsRoute />
+      </AccessGate>
+    ),
+  },
+  { path: '/w/:slug/invite/:token', element: <PersonalInvitationRoute /> },
+  { path: '/w/:slug/invite', element: <PersonalInvitationRoute /> },
   { path: '/w/:slug', element: <GuestRoute /> },
   { path: '*', element: <NotFoundPage /> },
 ]);

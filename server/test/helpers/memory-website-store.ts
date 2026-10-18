@@ -16,6 +16,7 @@ export class MemoryWebsiteStore implements WebsiteStore {
   failAudit = false;
   events = new Map<string, EventRecord>();
   references: Record<string, number> = {};
+  invitationReferences?: (id: ObjectId) => number;
   audits: string[] = [];
   private lock: Promise<void> = Promise.resolve();
   constructor(public auth: MemoryAuthStore) {}
@@ -43,6 +44,7 @@ export class MemoryWebsiteStore implements WebsiteStore {
   async mutate(
     actor: AuthSnapshot,
     work: (s: WebsiteSnapshot) => WebsiteChange,
+    referencedEvent?: ObjectId,
   ) {
     const prior = this.lock;
     let release: () => void = () => {};
@@ -61,6 +63,9 @@ export class MemoryWebsiteStore implements WebsiteStore {
       const snapshot = await this.read(actor.user.weddingId);
       if (!snapshot)
         throw new HttpError(404, 'NOT_FOUND', 'Wedding not found.');
+      if (referencedEvent && this.invitationReferences)
+        snapshot.references.invitations =
+          this.invitationReferences(referencedEvent);
       const change = work(snapshot);
       if (this.failAudit) throw new Error('Synthetic audit failure');
       if (

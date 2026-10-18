@@ -37,6 +37,16 @@ export function mountFrontend(
       }
     });
   }
+  app.get('/w/:slug/invite/:token', (req, res, next) => {
+    if (!req.accepts('html')) {
+      next();
+      return;
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    // Generic HTML only: family names and capabilities never enter social metadata.
+    res.sendFile(indexFile);
+  });
   app.use(
     express.static(directory, {
       index: false,

@@ -78,7 +78,8 @@ export function DashboardPage() {
         </section>
         <p>
           <Link to="/website">Manage wedding website</Link> ·{' '}
-          <Link to="/events">Manage ceremonies</Link>
+          <Link to="/events">Manage ceremonies</Link> ·{' '}
+          <Link to="/invitations">Manage family invitations</Link>
         </p>
         <p>
           <Link to="/team">

@@ -145,6 +145,8 @@ Exit check: both roles can publish/update; unpublished content stays private; al
 
 ### M4 — Families, personal links, estimates and email batches
 
+M4A manual-sharing slice is implemented locally: family records, selected-event personal links, manual Sent tracking and estimates. See INVITATIONS_IMPLEMENTATION.md and PROJECT_STATUS.md for acceptance evidence. M4B email dispatch remains separate pending the policy/provider decisions below.
+
 - Build family records, selected active events, protected invitation links and encrypted recoverable link storage. Public invitation responses omit private contact data.
 - Implement manual WhatsApp/copy sharing, manual Sent tracking and unique-family/event estimates. No RSVP or family-size limit.
 - Implement the Resend dispatch model described above, daily allowance, batch review, per-recipient outcomes, guarded retries and verified webhook processing where shown.

@@ -30,6 +30,10 @@
     "./website": {
       "types": "./dist/website.d.ts",
       "import": "./dist/website.js"
+    },
+    "./invitations": {
+      "types": "./dist/invitations.d.ts",
+      "import": "./dist/invitations.js"
     }
   },
   "scripts": {

@@ -23,6 +23,10 @@ const envSchema = z
       .string()
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
+    INVITATION_ENCRYPTION_KEY: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.email().optional(),
     EMAIL_ALLOWED_RECIPIENTS: z

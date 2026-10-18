@@ -1,3 +1,8 @@
+import { migrateInvitations } from '../src/migrations/004-family-invitations.js';
+import { MongoInvitationStore } from '../src/modules/invitations/invitations.repository.js';
+import { InvitationService } from '../src/modules/invitations/invitations.service.js';
+import { InvitationVault } from '../src/modules/invitations/invitations.vault.js';
+import { MemoryInvitationStore } from './helpers/memory-invitation-store.js';
 import { migrateWebsite } from '../src/migrations/003-wedding-events.js';
 import { MongoWebsiteStore } from '../src/modules/website/website.repository.js';
 import { WebsiteService } from '../src/modules/website/website.service.js';
@@ -33,6 +38,7 @@ try {
     await migrateAuth(database.db);
     await migrateAccess(database.db);
     await migrateWebsite(database.db);
+    await migrateInvitations(database.db);
   }
   const authStore = database
     ? new MongoAuthStore(database.client, database.db)
@@ -49,6 +55,18 @@ try {
     'http://127.0.0.1:3101',
   );
   worker = new AuthEmailWorker(accessStore, vault, new OutboxTransport(outbox));
+  const websiteStore = database
+    ? new MongoWebsiteStore(database.client, database.db)
+    : new MemoryWebsiteStore(authStore as MemoryAuthStore);
+  const website = new WebsiteService(websiteStore);
+  const invitations = new InvitationService(
+    database
+      ? new MongoInvitationStore(database.client, database.db)
+      : new MemoryInvitationStore(websiteStore as MemoryWebsiteStore),
+    new InvitationVault(Buffer.alloc(32, 7)),
+    website,
+    'http://127.0.0.1:3101',
+  );
   const app = createApp({
     logger: createLogger('silent'),
     checkReady: async () => {
@@ -58,11 +76,8 @@ try {
       new URL('../../client/dist', import.meta.url),
     ),
     access,
-    website: new WebsiteService(
-      database
-        ? new MongoWebsiteStore(database.client, database.db)
-        : new MemoryWebsiteStore(authStore as MemoryAuthStore),
-    ),
+    website,
+    invitations,
     auth: {
       service: auth,
       options: {

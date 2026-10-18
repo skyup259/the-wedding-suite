@@ -4,6 +4,10 @@ An Indian wedding management application, built as a modular monolith. The first
 
 Start with [PROJECT_STATUS.md](./PROJECT_STATUS.md) for progress, decisions, verification, and the next development milestone. Update that document with every meaningful development change. [AGENTS.md](./AGENTS.md) makes this handoff requirement explicit for future coding agents and contributors.
 
+Manual family invitations and attendance estimates are implemented as M4A at `/invitations`; see [INVITATIONS_IMPLEMENTATION.md](./INVITATIONS_IMPLEMENTATION.md) for personal links, encryption-key setup and current verification limits. Family email batches remain future M4B work.
+
+See [BUG_BACKLOG.md](./BUG_BACKLOG.md) for deferred bugs ranked by severity/priority, reproduction steps, causes, fixed regressions and pending QA tasks.
+
 See [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) for the proposed feature order, UX alignment, invitation-batch dates and staged deployment plan.
 
 The first feature is detailed in [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md): signup creates a wedding/Admin atomically, followed by session login, a private dashboard shell and logout.
@@ -59,7 +63,7 @@ If the same configuration connected earlier but now fails during TLS negotiation
 | `npm run lint`             | ESLint with zero warnings allowed                                                          |
 | `npm run format`           | Format application code and maintained project docs                                        |
 | `npm run format:check`     | Check formatting without writing                                                           |
-| `npm run db:migrate`       | Apply versioned auth and team/recovery schemas explicitly; never seed business data        |
+| `npm run db:migrate`       | Apply versioned auth, website and family schemas explicitly; never seed business data      |
 | `npm run test:integration` | Test real Atlas transactions/indexes using an isolated temporary database                  |
 | `npm run test:e2e:local`   | Run built-app browser journeys with explicit in-memory test stores; no Atlas or real email |
 | `npm run test:e2e`         | Build and run the real browser journey against an isolated temporary database              |
@@ -75,7 +79,7 @@ Run one development entry point at a time. Root scripts prepare shared output au
 | `server/` | Express, TypeScript, MongoDB driver, validated configuration and HTTP foundation |
 | `shared/` | Browser-safe Zod schemas and API types                                           |
 
-Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, `@wedding-suite/shared/auth`, `@wedding-suite/shared/access`, and `@wedding-suite/shared/website` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
+Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, `@wedding-suite/shared/auth`, `@wedding-suite/shared/access`, `@wedding-suite/shared/website`, and `@wedding-suite/shared/invitations` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
 
 All development entry points build shared first. TypeScript then watches shared with `noEmitOnError`; backend watch explicitly includes shared emitted JavaScript. Vite observes the linked package without pre-bundling it. A shared compilation failure leaves the last valid runtime output in use while the compiler reports the error; correct it to resume updates. `check` must pass before handing changes off.
 
@@ -97,7 +101,7 @@ Email is trimmed/lowercased without removing dots or plus tags. Passwords are 15
 
 Writes obtain a CSRF token automatically and must send the configured `APP_ORIGIN`. HTTP development permits the equivalent localhost/127.0.0.1 origin on the same port; production accepts exactly the configured HTTPS origin. Production cookies are Secure, HttpOnly and `__Host-` prefixed. Set a private, stable `CSRF_SECRET` of at least 32 characters in production (`openssl rand -base64 32`); development generates a process-local secret if absent. No Resend/S3 credentials are needed for signup/login/logout or local outbox review.
 
-The explicit migrations create validators/indexes for users, weddings, sessions, auditLogs, authRateLimits, authTokens, auth-email jobs and events plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
+The explicit migrations create validators/indexes for users, weddings, sessions, auditLogs, authRateLimits, authTokens, auth-email jobs, events and family invitations plus schemaMigrations history. It is idempotent, does not run at startup, and seeds no accounts. Never run two migration processes together. After a hard crash, confirm no runner is active before an operator removes only the `schemaMigrations` record with `_id: '__migration_lock'`; do not remove applied-history markers. Re-run the migration to resume safely. Back up existing data and review index compatibility before applying migrations to an established environment.
 
 For staging/production: build with dev dependencies, configure environment/secrets, run `npm run db:migrate:production -w @wedding-suite/server` once using the compiled output, then start the service. Set the intended environment explicitly; production never loads `server/.env`. Test signup/signin/signout over the real HTTPS origin. Configure proxy trust for the actual host so IP rate limits work correctly. Manager invitations and password recovery are covered in [TEAM_RECOVERY.md](./TEAM_RECOVERY.md); email verification remains outside the implemented scope.
 

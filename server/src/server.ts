@@ -1,3 +1,6 @@
+import { invitationVault } from './modules/invitations/invitations.vault.js';
+import { InvitationService } from './modules/invitations/invitations.service.js';
+import { MongoInvitationStore } from './modules/invitations/invitations.repository.js';
 import { MongoWebsiteStore } from './modules/website/website.repository.js';
 import { WebsiteService } from './modules/website/website.service.js';
 import { emailRuntime } from './infrastructure/email.js';
@@ -58,10 +61,26 @@ async function start(): Promise<void> {
           email.transport,
         );
       }
+      const website = new WebsiteService(
+        new MongoWebsiteStore(database.client, database.db),
+      );
+      const linkVault = await invitationVault(config);
+      if (!linkVault)
+        logger.warn(
+          'Family invitations unavailable until INVITATION_ENCRYPTION_KEY is configured.',
+        );
       return createApp({
-        website: new WebsiteService(
-          new MongoWebsiteStore(database.client, database.db),
-        ),
+        website,
+        ...(linkVault
+          ? {
+              invitations: new InvitationService(
+                new MongoInvitationStore(database.client, database.db),
+                linkVault,
+                website,
+                config.APP_ORIGIN,
+              ),
+            }
+          : {}),
         ...(access ? { access } : {}),
         logger,
         trustProxy: config.TRUST_PROXY,
