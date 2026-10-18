@@ -4,6 +4,9 @@ import { loadDevelopmentEnvironment } from './config/load-env.js';
 import { parseEnvironment } from './config/env.js';
 import { connectDatabase } from './infrastructure/database/mongo.js';
 import { createLogger } from './infrastructure/logger.js';
+import { MongoAuthStore } from './modules/auth/auth.repository.js';
+import { createAuthService } from './modules/auth/auth.service.js';
+import { developmentCsrfSecret } from './modules/auth/auth.routes.js';
 
 async function start(): Promise<void> {
   loadDevelopmentEnvironment();
@@ -15,10 +18,27 @@ async function start(): Promise<void> {
   );
   let shuttingDown = false;
   const app = await Promise.resolve()
-    .then(() =>
-      createApp({
+    .then(async () => {
+      const authStore = new MongoAuthStore(database.client, database.db);
+      const authService = await createAuthService(
+        authStore,
+        config.SESSION_TTL_SECONDS,
+      );
+      if (!(await authStore.ready()))
+        logger.warn(
+          'Authentication migrations pending. Run npm run db:migrate before using signup/login.',
+        );
+      return createApp({
         logger,
         trustProxy: config.TRUST_PROXY,
+        auth: {
+          service: authService,
+          options: {
+            origin: config.APP_ORIGIN,
+            secure: config.NODE_ENV === 'production',
+            csrfSecret: config.CSRF_SECRET ?? developmentCsrfSecret(),
+          },
+        },
         checkReady: async () => {
           if (shuttingDown) throw new Error('Shutting down');
           await database.checkReady();
@@ -30,8 +50,8 @@ async function start(): Promise<void> {
               ),
             }
           : {}),
-      }),
-    )
+      });
+    })
     .catch(async (error: unknown) => {
       await database.close();
       throw error;

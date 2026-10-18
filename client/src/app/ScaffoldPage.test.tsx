@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ScaffoldPage } from './ScaffoldPage.js';
+import { MemoryRouter } from 'react-router';
 
 function renderPage() {
   const queryClient = new QueryClient({
@@ -9,7 +10,9 @@ function renderPage() {
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <ScaffoldPage />
+      <MemoryRouter>
+        <ScaffoldPage />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }

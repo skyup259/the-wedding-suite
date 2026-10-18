@@ -10,6 +10,8 @@ export default tseslint.config(
       '**/dist/**',
       '**/coverage/**',
       'node_modules/**',
+      'test-results/**',
+      'playwright-report/**',
       'stitch_marriage_suite_ui_design/**',
     ],
   },

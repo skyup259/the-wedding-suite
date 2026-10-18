@@ -2,6 +2,7 @@ import type { ErrorRequestHandler, Response } from 'express';
 import type { ApiErrorResponse } from '@wedding-suite/shared/http';
 
 export class HttpError extends Error {
+  fields?: ApiErrorResponse['error']['fields'];
   constructor(
     public readonly status: number,
     public readonly code: string,
@@ -35,7 +36,14 @@ export const errorHandler: ErrorRequestHandler = (
     return;
   }
   if (error instanceof HttpError) {
-    sendError(res, error.status, error.code, error.message);
+    res.status(error.status).json({
+      error: {
+        code: error.code,
+        message: error.message,
+        ...(error.fields ? { fields: error.fields } : {}),
+      },
+      meta: { requestId: res.locals.requestId },
+    });
     return;
   }
   const type =

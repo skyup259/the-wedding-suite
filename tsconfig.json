@@ -3,9 +3,9 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["vitest.config.ts"]
+  "include": ["vitest.config.ts", "playwright.config.ts", "tests/**/*.ts"]
 }

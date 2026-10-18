@@ -15,7 +15,7 @@ Related: [Database Design](./DATABASE_DESIGN.md), [System Architecture](./SYSTEM
 | Connection scheme       | `mongodb+srv`                                               |
 | Development database    | Proposed: `marriage_suite_dev`; not yet created or verified |
 
-MongoDB Compass connected successfully on 18 October 2026 with the updated database-user password and explicit `authSource=admin`. The visible databases were `admin`, `config`, `local`, and `sample_mflix`. This verifies Compass connectivity only; application connectivity, user roles, validators, indexes, backups, region and cluster tier have not been verified.
+MongoDB Compass connected successfully on 18 October 2026 with the updated database-user password and explicit `authSource=admin`. The visible databases were `admin`, `config`, `local`, and `sample_mflix`. This originally verified Compass connectivity only. On the same date, after the owner added the changed client IP to Atlas Network Access, the backend MongoDB connection/ping and readiness endpoints were independently verified successfully. Write permissions, validators, indexes, backups, region and cluster tier remain unverified.
 
 ## Connection templates
 
@@ -71,10 +71,11 @@ Before serving application traffic:
 3. Verify `/api/v1/health/live` and `/api/v1/health/ready` on the deployed HTTPS origin. Readiness pings the database; it does not verify write permissions, schema deployment or tenant isolation.
 4. Apply and verify the versioned migrations/indexes/validators when implemented. Startup does not create them. Verify backups/restoration and the two-wedding isolation checks before the pilot.
 
-Production hosting, credentials, database, migrations and backup configuration remain pending. Only the Compass connection to the current cluster has been verified in this chat.
+Production hosting, credentials, database, migrations and backup configuration remain pending. Compass connectivity and the development backend connection/ping/readiness have been verified; no application schema or data mutations were performed by these checks.
 
 ## Troubleshooting
 
+- **TLS alert after a previously successful connection:** On 18 October 2026, a read-only investigation found that the current public outbound IP differed from the sole active Atlas `/32` access-list entry. The configured cluster/user/authSource matched this guide; DNS and TCP succeeded, but default TLS and TLS 1.2 probes to all three nodes received `ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR` before database authentication. The owner subsequently added the current narrow IP entry and reported it Active. The application connection/ping then succeeded, and backend readiness plus Vite-proxied readiness both returned HTTP 200 after a development restart. This confirms the outdated network access entry caused the failure. Dynamic home/ISP addresses can change while the application URI remains unchanged. Keep actual changing client IPs out of committed setup examples, and keep certificate validation enabled. See [Atlas connection troubleshooting](https://www.mongodb.com/docs/atlas/troubleshoot-connection/).
 - **`bad auth : authentication failed`:** The earlier password was rejected; the updated password succeeded. Check the exact database username, current password, `authSource=admin`, and URI encoding. Use database-user credentials rather than the Atlas website login.
 - **Timeout or network failure:** Check cluster availability and the client's Atlas network access entry. The earlier Compass diagnostic reported the cluster ready and client IP allowed; those checks are historical and can change.
 - **Application database missing:** The proposed development database is not part of the verified Compass result. Create it through the development setup/migration flow and select its name explicitly in the backend.

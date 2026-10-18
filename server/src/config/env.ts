@@ -12,6 +12,13 @@ const envSchema = z
       .enum(['development', 'test', 'production'])
       .default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    SESSION_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(604800)
+      .default(86400),
+    CSRF_SECRET: z.string().min(32).max(512).optional(),
     APP_ORIGIN: z.url().refine((value) => {
       const url = new URL(value);
       return ['http:', 'https:'].includes(url.protocol) && url.origin === value;
@@ -39,6 +46,12 @@ const envSchema = z
       ),
   })
   .superRefine((value, context) => {
+    if (value.NODE_ENV === 'production' && !value.CSRF_SECRET)
+      context.addIssue({
+        code: 'custom',
+        path: ['CSRF_SECRET'],
+        message: 'Production requires a stable CSRF secret.',
+      });
     if (
       value.NODE_ENV === 'production' &&
       !value.APP_ORIGIN.startsWith('https://')

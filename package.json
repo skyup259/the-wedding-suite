@@ -14,6 +14,9 @@
   },
   "packageManager": "npm@11.19.0",
   "scripts": {
+    "test:integration": "npm run build -w @wedding-suite/shared && vitest run --config server/vitest.integration.config.ts",
+    "test:e2e": "playwright test",
+    "db:migrate": "npm run build -w @wedding-suite/shared && npm run db:migrate -w @wedding-suite/server",
     "dev": "npm run build -w @wedding-suite/shared && concurrently --kill-others --success first --names shared,server,client \"npm run dev -w @wedding-suite/shared\" \"npm run dev -w @wedding-suite/server\" \"npm run dev -w @wedding-suite/client\"",
     "dev:client": "npm run build -w @wedding-suite/shared && concurrently --kill-others --success first --names shared,client \"npm run dev -w @wedding-suite/shared\" \"npm run dev -w @wedding-suite/client\"",
     "dev:server": "npm run build -w @wedding-suite/shared && concurrently --kill-others --success first --names shared,server \"npm run dev -w @wedding-suite/shared\" \"npm run dev -w @wedding-suite/server\"",
@@ -31,9 +34,12 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
+    "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
+    "@types/luxon": "3.7.6",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",

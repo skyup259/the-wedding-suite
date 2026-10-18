@@ -5,7 +5,7 @@ Date: 15 October 2026
 Status: Implementation design based on approved product and architecture  
 Related documents: [PRD](./PRD.md), [System Architecture](./SYSTEM_ARCHITECTURE.md)
 
-This document defines the MongoDB model. It does not create a database or deploy schema changes. Exact validators and migrations will be implemented with the application.
+This document defines the MongoDB model. It does not create a database or deploy schema changes. The auth slice has an explicit migration; remaining feature validators/migrations will be added with those features.
 
 ## 1. Database conventions
 
@@ -349,6 +349,20 @@ Google vendor results are not a permanent application collection. Fetch them thr
 ## 11. Development cluster connection
 
 See [MongoDB Atlas — Development Setup](./MONGODB_DEVELOPMENT.md) for the verified cluster hostname, database username, password-free connection templates, proposed backend configuration, setup steps and troubleshooting. Compass connectivity was verified on 17 October 2026; application schema deployment remains pending.
+
+## 12. Implemented authentication persistence — 18 October 2026
+
+The official MongoDB driver is used. `server/src/migrations/001-auth-foundation.ts` creates validators/indexes only for users, weddings, sessions, auditLogs and authRateLimits, and records `001-auth-foundation` in schemaMigrations. The other collections/indexes described above remain planned. Normal startup never applies migrations or seeds data.
+
+- Users use trimmed/lowercase globally unique email (no provider-specific rewriting), names up to 100 characters, Argon2id password hashes (19 MiB memory, two iterations, parallelism one) and sessionVersion=1. At most one Admin per wedding is enforced by a partial unique index on weddingId/role for role=admin. Signup atomically inserts wedding, Admin, authenticated session and account_registered audit entry; a failure rolls back all four.
+- Draft wedding initialisation includes the approved timezone/theme, mainDate, collision-safe slug, unlocked slug/publication fields, empty website text, null cover/location/announcement, gallery defaults, revision=1 and actor IDs. photoExpiryAt is local midnight eight calendar days after mainDate, converted to UTC; retentionVersion=1 and cleanup is idle. No public website or storage job is enabled by registration.
+- Authenticated sessions contain only SHA-256 hashes of random 256-bit tokens, valid userId/weddingId, absolute expiresAt and revokedAt=null initially. Session lifetime defaults to 24 hours. TTL on expiresAt handles eventual deletion; application checks current account/session/wedding state independently. Login rotates the prior browser session; logout sets revokedAt and clears cookies.
+- `authRateLimits` is infrastructure data, not wedding-owned business data: it must protect requests before identity exists. Its `_id` is a SHA-256 digest of limiter scope, IP or normalised email, and window; it stores only count and expiresAt, with TTL on expiresAt. It intentionally has a string ID and no weddingId/schemaVersion/createdAt/updatedAt. Atomic increments aggregate limits across instances. No raw email/IP is stored in these records.
+- Pre-auth CSRF uses a random HttpOnly context cookie and signed double-submit token; no incomplete user or authenticated session is persisted. Password-reset/invitation authTokens remain unimplemented.
+- `schemaMigrations` is infrastructure metadata with string IDs; applied entries have appliedAt. A distinct `__migration_lock` record has a random owner and acquiredAt; the runner deletes only its own lock. It does not expire automatically. After a hard crash an operator must confirm the runner has stopped before clearing this one lock. Partial migration execution can then be retried idempotently; history markers are never removed automatically.
+- Explicit Atlas integration/browser tests create randomly named `ws_test_auth_<24 hex>` databases and drop only the exact database they created. These tests never write to the configured application database or seed the owner's real wedding.
+
+Run `npm run db:migrate` locally or the compiled server's `db:migrate:production` command in the target environment. Authentication returns 503 until its migration marker is present. Review/back up existing data before deploying validators or unique indexes. Future feature migrations must extend these validators intentionally rather than treating this initial subset as the complete product schema.
 
 ## References
 

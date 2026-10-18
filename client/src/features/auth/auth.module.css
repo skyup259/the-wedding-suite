@@ -1,0 +1,267 @@
+.layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(20rem, 0.95fr) minmax(30rem, 1.05fr);
+}
+.story {
+  background: #e9ede4;
+  padding: 3rem 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.brand {
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  text-decoration: none;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.brand span {
+  display: block;
+  font: 0.6rem var(--font-body);
+  letter-spacing: 0.2em;
+  margin-top: 0.7rem;
+}
+.storyBody {
+  margin: auto 0;
+  padding: 5rem 0;
+  max-width: 28rem;
+}
+.storyBody h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 5vw, 5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 1.5rem 0;
+}
+.storyBody > p:last-of-type {
+  max-width: 24rem;
+  color: var(--color-muted);
+}
+.eyebrow {
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.flower {
+  font-size: 12rem;
+  line-height: 1;
+  margin-top: 2rem;
+  color: #798b69;
+  opacity: 0.3;
+}
+.footerNote,
+.hint {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.formSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+.formCard {
+  width: 100%;
+  max-width: 29rem;
+}
+.formCard h1 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  margin: 1rem 0;
+}
+.subtitle {
+  color: var(--color-muted);
+  margin-bottom: 2rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  margin: 1.1rem 0;
+  min-width: 0;
+}
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+.field input {
+  width: 100%;
+  min-height: 48px;
+  background: #fff;
+  border: 1px solid #b3b9ad;
+  border-radius: 0.4rem;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  color: var(--color-text);
+}
+.field input[aria-invalid='true'] {
+  border-color: #a33327;
+}
+.fieldError {
+  font-size: 0.8rem;
+  color: #a33327;
+  margin: 0.4rem 0 0;
+}
+.hint {
+  margin: 0.4rem 0;
+}
+.submit {
+  width: 100%;
+  margin-top: 0.7rem;
+}
+.switch {
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 1.5rem;
+}
+.switch a {
+  font-weight: 600;
+}
+.error {
+  color: #872d23;
+  background: #fcf0eb;
+  border: 1px solid #e4bdb3;
+  padding: 0.8rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+}
+.steps {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0;
+  margin: 1.5rem 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+.steps [aria-current] {
+  color: var(--color-accent);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.4rem;
+}
+.stepTitle {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.actions {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+}
+.secondary {
+  background: transparent;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+.mobileBrand {
+  display: none;
+}
+.wait {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding: 2rem;
+}
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.3rem 5vw;
+  border-bottom: 1px solid var(--color-border);
+  background: #f3f4ef;
+}
+.dashboardHeader > div {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.dashboardHeader > div > span {
+  font-size: 0.85rem;
+}
+.dashboardBody {
+  max-width: 68rem;
+  padding: 3rem 2rem;
+  margin: auto;
+}
+.dashboardBody > h1 {
+  margin: 0.8rem 0;
+}
+.weddingCard {
+  background: #eef0e8;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+.weddingCard h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 400;
+  margin: 0.8rem 0;
+}
+.weddingCard h2 span {
+  color: #8a4f38;
+}
+.badge {
+  background: #fff;
+  border: 1px solid #bcc6b4;
+  padding: 0.25rem 0.7rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+}
+.nextCard {
+  padding: 1rem 0;
+  max-width: 44rem;
+}
+.nextCard h2 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.8rem;
+}
+@media (max-width: 850px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .story {
+    display: none;
+  }
+  .formSection {
+    padding: 2rem 1.25rem;
+  }
+  .mobileBrand {
+    display: block;
+    font-family: var(--font-heading);
+    color: var(--color-accent);
+    font-size: 1.4rem;
+    margin-bottom: 3rem;
+    text-decoration: none;
+  }
+  .dashboardHeader .brand {
+    font-size: 1.2rem;
+  }
+  .dashboardHeader > div {
+    gap: 0.7rem;
+  }
+  .dashboardHeader > div > span {
+    display: none;
+  }
+  .dashboardBody {
+    padding: 2rem 1.25rem;
+  }
+  .pair {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

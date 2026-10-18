@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getReadiness } from '../api/health.js';
 import styles from './ScaffoldPage.module.css';
+import { Link } from 'react-router';
 
 export function ScaffoldPage() {
   const readiness = useQuery({
@@ -14,8 +15,8 @@ export function ScaffoldPage() {
         <p className={styles.eyebrow}>The Wedding Suite</p>
         <h1>A place for every celebration.</h1>
         <p>
-          The application foundation is ready. Wedding planning and guest
-          experiences are coming next.
+          Your private wedding workspace starts here. Create an account to begin
+          planning your celebration.
         </p>
         <div className={styles.status} role="status" aria-live="polite">
           {readiness.isPending && <p>Checking service connection…</p>}
@@ -34,6 +35,10 @@ export function ScaffoldPage() {
             </>
           )}
         </div>
+        <p>
+          <Link to="/signup">Create your wedding workspace</Link> ·{' '}
+          <Link to="/login">Sign in</Link>
+        </p>
       </div>
     </main>
   );

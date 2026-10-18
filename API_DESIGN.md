@@ -59,7 +59,7 @@ Create: 201. Read/update: 200. Asynchronous processing: 202 with a status resour
 
 ### Concurrency and retries
 
-- Mutable resource responses include revision and `ETag: "<revision>"`. PATCH/DELETE and resource state-change actions require `If-Match` against that resource, except explicitly idempotent capability exchanges or logout.
+- Mutable resource responses include revision and `ETag: "<revision>"`. PATCH/DELETE and resource state-change actions require `If-Match` against that resource, except explicitly idempotent capability exchanges and the auth register/login/logout actions, which do not mutate revision-controlled business resources.
 - Missing precondition: 428 `PRECONDITION_REQUIRED`; stale revision: 412 `REVISION_CONFLICT`. Return current revision only for authorised resources.
 - POST payment entries, upload submissions, upload slots and exports require `Idempotency-Key`. Scope keys by wedding/capability, route and logical operation. Same key/body returns the original operation; same key with different payload returns 409 `IDEMPOTENCY_CONFLICT`.
 - Idempotency replay is checked after current authorisation but before rejecting the original stale revision. Repeated payment requests do not append another payment. Replayed upload responses may issue fresh credentials for the same unfinished slot; never create duplicate photos.
@@ -97,6 +97,18 @@ Registration payload:
 Create the wedding and Admin atomically. Generate slug `avani-swar-14-02-2027`, adding a short unique suffix on collision. Registration never creates a second wedding for an existing account. Reject authenticated attempts to register another wedding with 409 `ACCOUNT_ALREADY_ASSIGNED`. Login failures use a generic 401 `INVALID_CREDENTIALS`.
 
 Setup/reset token expiry is checked before atomically consuming it. Reject cross-wedding Manager acceptance with 409 `ACCOUNT_ALREADY_ASSIGNED`. Token expiry and password policy values remain implementation configuration, reported through appropriate validation errors.
+
+### Implemented authentication defaults — 18 October 2026
+
+The first implemented slice is csrf/register/login/me/logout. Recovery and Manager invitation routes above remain planned. Shared executable schemas are exported through `@wedding-suite/shared/auth`.
+
+- Registration is strict: reject unknown fields including client-supplied role/wedding ownership. Names are trimmed, required, at most 100 characters. Emails are trimmed/lowercased, valid and at most 254 characters; dots/plus tags are preserved. Passwords are 15–128 characters without trimming or composition rules. Login accepts any nonempty password up to 128 characters. Main date is a valid calendar date; timezone must be recognised by the runtime. Theme IDs remain traditional/floral/minimal; the current signup UI defaults to traditional.
+- Register (201), login (200) and me (200) return `{data: {user: {id, displayName, email, role}, wedding: {id, couple, mainDate, timezone, slug, publicationStatus, themeId}}, meta: {requestId}}`. ObjectIds are strings. No password/session hash or raw session token appears in JSON. Register persists a draft wedding/Admin/session/audit record atomically before issuing a cookie. Duplicate email returns 409 `EMAIL_ALREADY_REGISTERED`; invalid fields return 422 `VALIDATION_ERROR` with field paths.
+- Sessions have a 24-hour absolute lifetime by default, configurable with `SESSION_TTL_SECONDS` (300–604800 seconds). Login rotates/revokes the previous browser session. Me checks expiry, revocation, active account state, sessionVersion and wedding membership, independent of TTL cleanup. Missing access returns 401 `AUTH_REQUIRED`; an invalid presented session returns `SESSION_EXPIRED`. Expired/missing logout returns 401 and clears cookies; successful logout returns 204 and revokes the current session only.
+- `GET /auth/csrf` returns `{data: {csrfToken}, meta: {requestId}}`. Pre-auth context is a random HttpOnly context cookie, not a user/session database row. All three POST actions require `X-CSRF-Token` and an allowed Origin. Signed double-submit CSRF is bound to that context or the authenticated session hash. Issue/clear operations discard old CSRF context. Session/context cookies use SameSite=Lax; CSRF cookie uses Strict. All are HttpOnly, Path=/ and host-only, with Secure and `__Host-` names in production (`ws_session`, `ws_context`, `ws_csrf` locally).
+- Production Origin must equal `APP_ORIGIN`; HTTP development accepts its localhost/127.0.0.1 alias at the same port. CSRF establishment rejects cross-site Fetch Metadata. CSRF errors are 403 `CSRF_FAILED`. Production requires a stable private `CSRF_SECRET` of at least 32 characters.
+- Fixed-window MongoDB-backed rate limits per 15 minutes: register 5/IP, login 30/IP plus 10/normalised email, CSRF 120/IP. Failed attempts count. Excess returns 429 `RATE_LIMITED` plus `Retry-After`; limits aggregate across server instances. Configure trusted proxies accurately before deployment.
+- API responses are no-store. Auth routes fail closed with 503 `SERVICE_UNAVAILABLE` until the explicit auth migration exists. Unknown API routes stay JSON errors; frontend-only navigation receives the React shell. Detailed account recovery/email flows remain separate work.
 
 ## 3. Team management
 

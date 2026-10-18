@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "e2e:serve": "tsx test/e2e-server.ts",
+    "db:migrate": "tsx src/migrations/run.ts",
+    "db:migrate:production": "node dist/migrations/run.js",
     "dev": "tsx watch --include '../shared/dist/**/*.js' --include '.env' src/server.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
@@ -11,8 +14,12 @@
   },
   "dependencies": {
     "@wedding-suite/shared": "0.1.0",
+    "argon2": "0.45.1",
+    "cookie-parser": "1.4.7",
+    "csrf-csrf": "4.0.3",
     "express": "5.3.0",
     "helmet": "8.3.0",
+    "luxon": "3.7.2",
     "mongodb": "7.7.0",
     "pino": "10.4.0",
     "pino-http": "11.0.0",

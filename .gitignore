@@ -10,3 +10,5 @@ coverage/
 .local/
 /docs/
 /stitch_marriage_suite_ui_design/
+test-results/
+playwright-report/

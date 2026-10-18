@@ -33,3 +33,7 @@ button {
   outline: 3px solid var(--color-accent);
   outline-offset: 4px;
 }
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
