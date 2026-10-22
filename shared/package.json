@@ -34,6 +34,10 @@
     "./invitations": {
       "types": "./dist/invitations.d.ts",
       "import": "./dist/invitations.js"
+    },
+    "./campaigns": {
+      "types": "./dist/campaigns.d.ts",
+      "import": "./dist/campaigns.js"
     }
   },
   "scripts": {

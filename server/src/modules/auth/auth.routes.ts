@@ -1,3 +1,5 @@
+import { mountCampaignRoutes } from '../campaigns/campaigns.routes.js';
+import type { CampaignService } from '../campaigns/campaigns.service.js';
 import { mountInvitationRoutes } from '../invitations/invitations.routes.js';
 import type { InvitationService } from '../invitations/invitations.service.js';
 import { mountWebsiteRoutes } from '../website/website.routes.js';
@@ -33,6 +35,7 @@ export function authRoutes(
   access?: AccessService,
   website?: WebsiteService,
   invitations?: InvitationService,
+  campaigns?: CampaignService,
 ) {
   const router = Router();
   const allowedOrigins = new Set([options.origin]);
@@ -382,6 +385,25 @@ export function authRoutes(
         503,
         'SERVICE_UNAVAILABLE',
         'Family invitations require encryption key configuration.',
+      );
+    });
+  if (campaigns)
+    mountCampaignRoutes(router, campaigns, async (req) => {
+      const actor = await service.resolve(token(req));
+      if (!actor)
+        throw new HttpError(
+          401,
+          'AUTH_REQUIRED',
+          'Please sign in to continue.',
+        );
+      return actor;
+    });
+  else
+    router.use(['/email-batches', '/email-dispatches'], () => {
+      throw new HttpError(
+        503,
+        'SERVICE_UNAVAILABLE',
+        'Family email requires email and invitation configuration.',
       );
     });
   router.use(

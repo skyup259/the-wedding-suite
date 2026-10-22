@@ -1,53 +1,55 @@
 # Project status and development handoff
 
-Last updated: 18 October 2026 (Asia/Kolkata).
+Last updated: 22 October 2026 (Asia/Kolkata).
 
 This is the living entry point for a new contributor. It records actual implementation progress, decisions, verification, limitations and the next development steps. Read [README.md](./README.md) for commands and setup, then the linked baseline documents for product details.
 
 ## Current milestone
 
-**M4A manual family invitations implemented and verified locally with Atlas; migration 004 applied to development. M3 is pushed as `3c68675`; Owner manual QA approved M4A for a GitHub Desktop checkpoint. Deferred Low/P3 bugs, M4B email dispatch and staging/production acceptance remain pending.**
+**22 October connectivity/planning review:** connectivity restored after owner Atlas sign-in/current-IP update. The application adapter ping and direct/frontend-proxied readiness pass; both anonymous auth checks return 401 and the browser login page loads. No Atlas rule was changed by the agent. The [updated ordered backlog](./DEVELOPMENT_ROADMAP.md#remaining-work-and-recommended-order--22-october-2026) separates completed M1–M4B implementation from external acceptance and sequences expenses, tasks, the full photo lifecycle, streaming, vendors and pilot readiness.
+
+**M4B reviewed email batches remain implemented locally after pushed M4A commit `8811aef`, with deferred QA findings in BUG_BACKLOG.md. On 20 October the owner requested temporary photography from the UX references; local reference assets now appear across the site. Root checks (136 tests), five in-memory browser journeys and desktop/mobile photo loading checks passed. Explicit email resends remain disabled and live provider delivery remains unverified. Historical M4B check results and configuration findings are recorded below.**
 
 The owner approved authentication and then M2 implementation on 18 October 2026. Registration creates one draft wedding and its sole Admin atomically, signs in, and opens a protected dashboard showing real account/wedding details. `/login`, `/signup` and `/dashboard` are available. The private query cache is cleared on logout/account changes, and sessions are restored after refresh.
 
 See [WEBSITE_IMPLEMENTATION.md](./WEBSITE_IMPLEMENTATION.md) for M3 behaviour/scope and [TEAM_RECOVERY.md](./TEAM_RECOVERY.md) for M2 configuration/acceptance limits; [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md) records the first slice, [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) records the remaining sequence. Deployment is handled by the owner; no hosting, real email dispatch or production release was performed.
 
-Deferred findings are tracked in [BUG_BACKLOG.md](./BUG_BACKLOG.md), with severity, priority, reproduction steps, causes and acceptance criteria. QA gaps and release prerequisites are recorded separately from confirmed bugs. The owner requested documentation now and fixes later; these three minor findings do not block unrelated development.
+Deferred findings are tracked in [BUG_BACKLOG.md](./BUG_BACKLOG.md), with severity, priority, reproduction steps, causes and acceptance criteria. QA gaps and release prerequisites are recorded separately from confirmed bugs. The owner requested documentation now and fixes later: four Low/P3 findings and BUG-005, a Medium/P2 email outcome/reconciliation defect, remain open. BUG-006 was found in the latest manual email-batch QA. Unrelated development may continue.
 
 ## Confirmed architecture and product decisions
 
-| Area        | Decision                                                                                                                                                   |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Application | Modular monolith; React/TypeScript/Vite frontend; Express/TypeScript backend                                                                               |
-| Repository  | npm workspaces: client, server, shared; ESM; CSS Modules and CSS variables                                                                                 |
-| Database    | MongoDB Atlas with official driver; separate development/production configuration; no Docker                                                               |
-| Access      | Email/password and MongoDB-backed opaque sessions implemented; Admin/Manager accounts belong to one wedding; Guests have no accounts                       |
-| Production  | Same-origin API and frontend; hosting provider undecided                                                                                                   |
-| Photos      | Private S3; approved public and private-family views; seven-day access window anchored to main wedding date                                                |
-| Exports     | Team exports/downloads allowed before expiry; archive access cannot extend past photo expiry                                                               |
-| Publishing  | Preview before first publication; subsequent saved edits become live immediately                                                                           |
-| Dates       | One main wedding date anchors retention/slug; events can span multiple dates                                                                               |
-| Themes      | Three variants share behaviour/data; final visuals remain to be designed                                                                                   |
-| Email       | Resend adapter implemented for team setup/recovery; development defaults to private outbox, production disabled until configured; live delivery unverified |
+| Area        | Decision                                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Application | Modular monolith; React/TypeScript/Vite frontend; Express/TypeScript backend                                                         |
+| Repository  | npm workspaces: client, server, shared; ESM; CSS Modules and CSS variables                                                           |
+| Database    | MongoDB Atlas with official driver; separate development/production configuration; no Docker                                         |
+| Access      | Email/password and MongoDB-backed opaque sessions implemented; Admin/Manager accounts belong to one wedding; Guests have no accounts |
+| Production  | Same-origin API and frontend; hosting provider undecided                                                                             |
+| Photos      | Private S3; approved public and private-family views; seven-day access window anchored to main wedding date                          |
+| Exports     | Team exports/downloads allowed before expiry; archive access cannot extend past photo expiry                                         |
+| Publishing  | Preview before first publication; subsequent saved edits become live immediately                                                     |
+| Dates       | One main wedding date anchors retention/slug; events can span multiple dates                                                         |
+| Themes      | Three variants share behaviour/data; final visuals remain to be designed                                                             |
+| Email       | Resend adapter and reviewed family batches implemented; development defaults to private outbox; live provider delivery unverified    |
 
 ## Implementation tracker
 
-| Workstream                       | State                      | What exists / what remains                                                                                                                 |
-| -------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Workspace/build configuration    | Complete                   | Three packages, explicit shared exports and build-before-consumption scripts                                                               |
-| Frontend foundation              | Complete                   | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                            |
-| Backend foundation               | Complete                   | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                                 |
-| Shared contracts                 | Complete                   | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                            |
-| Tests and checks                 | M4A checks passed          | Latest root check: 119 tests across 19 files plus formatting/lint/types/build; 20 Atlas tests and four Atlas browser journeys passed       |
-| Atlas application connectivity   | Verified                   | After owner updated network access: real integration/browser checks passed; development readiness returned ready                           |
-| Database schema/migrations/seeds | M4A applied to development | Explicit 001/002/003/004 migrations completed in verified development database; no business data seeded                                    |
-| Authentication and team          | M2 Atlas verified          | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain      |
-| Wedding website/events/themes    | M3 Atlas verified          | Settings, event edits/archive, announcement, private preview, publish/unpublish, three themes, live guest refresh and safe social metadata |
-| Invitations/estimates            | M4A Atlas verified         | Families, personal links, manual sharing/Sent state and unique estimates verified; M4B email pending                                       |
-| Expenses/tasks                   | Not implemented            | Exact money, revisions and wedding isolation required when built                                                                           |
-| Photos/moderation/exports/jobs   | Not implemented            | Full lifecycle and expiry protection required before enabling                                                                              |
-| Vendors/streaming                | Not implemented            | Google Places discovery and YouTube embedding later                                                                                        |
-| Deployment                       | Not configured             | Hosting, production Atlas/S3/email and operational policies pending                                                                        |
+| Workstream                       | State                      | What exists / what remains                                                                                                                     |
+| -------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workspace/build configuration    | Complete                   | Three packages, explicit shared exports and build-before-consumption scripts                                                                   |
+| Frontend foundation              | Complete                   | Neutral React shell, routing, query provider, typed health request, CSS Modules                                                                |
+| Backend foundation               | Complete                   | App factory, configuration, safe logging/errors, health, Atlas adapter, production routing                                                     |
+| Shared contracts                 | Complete                   | Infrastructure, theme identifiers and strict auth request/safe response schemas                                                                |
+| Tests and checks                 | M4B checks passed          | Latest root check: 136 tests across 22 files plus formatting/lint/types/build; all 26 Atlas integration tests and five browser journeys passed |
+| Atlas application connectivity   | Restored 22 October        | Live adapter ping and direct/proxied readiness passed after owner current-IP update; schema/write suites not rerun                             |
+| Database schema/migrations/seeds | M4B applied to development | Explicit 001/002/003/004/005 migrations completed in verified development database; no business data seeded                                    |
+| Authentication and team          | M2 Atlas verified          | Manager access and password recovery passed real persistence/browser checks; controlled Resend and production HTTPS acceptance remain          |
+| Wedding website/events/themes    | M3 Atlas verified          | Settings, event edits/archive, announcement, private preview, publish/unpublish, three themes, live guest refresh and safe social metadata     |
+| Invitations/estimates            | M4B Atlas/outbox verified  | Families, personal links, manual Sent/estimates and M4B reviewed email batches implemented; real provider acceptance pending                   |
+| Expenses/tasks                   | Not implemented            | Exact money, revisions and wedding isolation required when built                                                                               |
+| Photos/moderation/exports/jobs   | Not implemented            | Full lifecycle and expiry protection required before enabling                                                                                  |
+| Vendors/streaming                | Not implemented            | Google Places discovery and YouTube embedding later                                                                                            |
+| Deployment                       | Not configured             | Hosting, production Atlas/S3/email and operational policies pending                                                                            |
 
 ## Latest authentication verification
 
@@ -123,6 +125,34 @@ Implemented locally on 18 October 2026 after the owner requested the next featur
 
 Independent M4A manual QA on 18 October: browser family creation/validation/edit/search/filters, sharing/copy, selected personal highlights/full schedule, Sent/unique estimates, conflict retention/reload, replacement, referenced ceremony archive and family archive passed on an isolated real Atlas database. Load more expanded 20 cards to all 24. All 17 supplementary HTTP scenarios and five targeted invitation component tests passed; root build passed. No new functional defect was confirmed in the exercised cases. See [MANUAL_M4A_QA.md](./MANUAL_M4A_QA.md) for exact methods and limits. WhatsApp URL/prefill was verified without actual sending; mobile and production/provider acceptance remain separate. Exact temporary database/outbox cleanup completed, and development readiness remained ready.
 
+## M4B development and provider status
+
+19 October 2026: owner added a Resend API key and authorised development. Implemented optional family email, reviewed/confirmed batches, atomic 25-new-family daily reservations, durable encrypted invitation_email jobs, lease fencing, safe original retries, unknown-outcome reconciliation and signed/deduplicated delivery webhook handling. Exact contracts and deliberate baseline extensions are in [EMAIL_INVITATIONS_IMPLEMENTATION.md](./EMAIL_INVITATIONS_IMPLEMENTATION.md).
+
+- Owner explicitly selected no explicit resends. A previously queued family cannot create another dispatch; retries preserve the original recipient/message/key. Sent updates on provider acceptance preserve intervening manual edits/status changes. Outbox does not mark Sent or claim delivery.
+- Current private configuration has a key/sender but no explicit live mode, allowlist or webhook secret. Read-only provider `/domains` returned HTTP 401. No key/address was printed and no actual email was sent; provider authentication, verified domain and real delivery remain unverified.
+- Root `npm run check` passed: formatting, zero-warning lint, root/package types, all 136 tests across 22 files and production build. Campaign HTTP/service coverage includes 12 tests with mocked provider sends/lookups and signed raw webhook verification.
+- Full `npm run test:integration` passed all 26 tests across five real Atlas suites, including six campaign tests. Coverage includes migration partial-run recovery/idempotency, Admin/Manager quota concurrency, confirmation replay, rollback, authority, fenced workers, receipt deduplication and a deterministic webhook/provider-binding race. That race initially reproduced a missed delivery update and passed after adding a shared provider-ID write fence. Temporary database cleanup is awaited.
+- Full `npm run test:e2e` passed all five real browser journeys against built assets and isolated Atlas persistence. The new desktop/mobile email journey verifies exact preview/confirmation, private outbox processing, unchanged Sent estimates, disabled repeat selection and persistent batch history. Desktop/mobile screenshots were visually reviewed; checkbox alignment and preview width were improved. The isolated browser database was removed with awaited cleanup.
+- `npm run db:migrate` completed through 005 in the verified development database. Private EMAIL_FROM failed configuration validation; the migration used a temporary synthetic sender override only, with no mail or business seed data. The private file was preserved. Final existing-service check found the backend unreachable and the frontend API proxy returned 502. Correct the private sender address and restart development before local QA; this is separate from the passing isolated suites.
+- UI/backend changes are local and uncommitted. Existing owner records and deferred bugs are preserved.
+- Next: owner QA using the checklist in EMAIL_INVITATIONS_IMPLEMENTATION.md after correcting EMAIL_FROM/restarting development. Resolve the provider authentication check, configure approved live mode/recipients and signed callback settings, then perform controlled provider acceptance. M5 expenses/tasks is the next planned feature after this review. No live mail, production deployment or push is included.
+
+## Latest M4B manual QA
+
+19 October 2026: [MANUAL_M4B_QA.md](./MANUAL_M4B_QA.md) records desktop browser QA against rebuilt assets and an isolated real Atlas/private-outbox server. Reviewed confirmation, stale/expired reviews, history, safe retry and unknown fixtures passed; all 15 supplementary HTTP/Atlas groups passed, including wedding isolation, disabled Manager denial, replay, fixed quota timezone and the 25-family concurrency cap. One new Low/P3 feedback issue is BUG-006. Existing BUG-005 remains open. Root build and targeted client (3) / server (12) tests passed. No actual provider send occurred; mobile override did not work, so this run verifies desktop only. Temporary database/outbox deletion was awaited and the QA listener stopped. Final documentation format/diff checks passed. Next: review both email findings and complete live-provider/device acceptance.
+
+## Temporary UX photography — 20 October 2026
+
+Owner requested using the photographs already shown in the supplied UX design until customer photographs are available. Added ten local JPEG assets from the original public reference sources (about 640 KB total): three couple covers, courtyard, ceremony décor, henna, dancing and invitation stationery. The reference HTML and screenshot placeholders were preserved unchanged.
+
+- Added photography to the landing/auth screens, planning dashboard, family invitation stationery, three theme-selection cards and guest/personal invitation views. Guest pages include theme-specific hero covers, decorative ceremony images and a clearly labelled celebration-inspiration strip.
+- Public-facing samples are identified as sample photography; they do not represent actual customer portraits, venue evidence or uploaded memories. Assets are served locally, with no third-party image requests from personal invitation pages. Hero images load eagerly and secondary guest images lazily; fixed aspect ratios reserve layout space.
+- `client/src/features/website/demo-media.ts` centralises replacement paths. [Asset provenance and replacement notes](./client/public/images/demo/README.md) map every original reference. Future customer-media integration must use the approved photo lifecycle/access rules; no customer upload, gallery permissions, S3 storage or retention changes are included.
+- Original reference images are only 253–512 pixels wide; larger customer originals will improve large-screen sharpness. Browser checks use explicit in-memory persistence/private outbox, not Atlas or live Resend.
+- Verification: root `npm run check` passed formatting, zero-warning lint, types, all 136 tests across 22 files and production build. Root `npm run test:e2e:local` passed all five browser journeys. An additional synthetic in-memory browser inspection scrolled to/decode-checked every guest image for all three themes at 1280px and 390px: all images loaded with no horizontal overflow. All ten local assets returned image/jpeg. Reviewed loaded desktop/mobile screenshots, including dashboard, auth, invitation stationery, theme previews and guest themes. Stopped the isolated preview listener after review; no owner database was used.
+- Next: owner reviews temporary imagery, then replace it with approved customer photographs when supplied. Preserve all existing M4B changes and deferred bugs.
+
 ## Historical scaffold verification record
 
 Verified on 18 October 2026 using Node.js 24.21.0 and npm 11.19.0:
@@ -163,12 +193,12 @@ Recoverable invitation/private-gallery links need a lookup hash plus authenticat
 
 ## Next development sequence
 
-The detailed plan is now [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). The owner supplied a planning scenario of 31 December 2026, invitations beginning 16 November (45 days earlier), 25 per day, and Resend email invitations. This is not a confirmed actual wedding date. Direct family email dispatch is a newly requested extension to the previous manual WhatsApp baseline; schemas/routes/status semantics must be reconciled before implementation.
+The detailed plan is now [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). The owner supplied a planning scenario of 31 December 2026, invitations beginning 16 November (45 days earlier), 25 per day, and Resend email invitations. This is not a confirmed actual wedding date. Direct family email dispatch extends the previous manual WhatsApp baseline; the implemented M4B contract and owner policy are recorded in EMAIL_INVITATIONS_IMPLEMENTATION.md.
 
 1. Owner reviews the completed auth slice locally and handles staging setup: stable CSRF secret, HTTPS origin/proxy trust, explicit migration, then the signup/login/logout smoke journey. Prepare CI separately.
 2. Complete M2 provider acceptance: configure the Resend sender with controlled staging recipients. Atlas integration/default browser checks and the development migration have passed.
 3. Review Manager setup/recovery and durable email behaviour over the real staging HTTPS origin; code/local substitute checks alone do not verify external services.
-4. M3 and M4A manual family invitations/estimates are implemented and verified. Next: owner reviews M4A, then agree M4B batch initiation, Sent/delivery and resend policy; controlled email dispatch requires the outstanding provider/staging acceptance.
+4. M3, M4A and M4B are implemented locally. Owner QA of M4A passed. Next: owner reviews M4B reviewed batches; controlled live dispatch requires corrected private provider/sender settings and staging acceptance. Explicit resends remain disabled.
 5. Add expenses and tasks, followed by the complete private photo/moderation/export/retention lifecycle.
 6. Add streaming and vendor discovery; complete every version-one pilot scenario before the full release.
 7. Stabilise before the hypothetical wedding, monitor during it and verify post-wedding cleanup. Target dates are conditional on capacity and acceptance checks, not guarantees.
@@ -371,6 +401,12 @@ The sequence is a roadmap, not a claim that these features exist. Agree detailed
 - Reviewed the pending implementation, migration, contracts, tests and documentation, including MANUAL_M4A_QA.md and BUG_BACKLOG.md. Re-ran root `npm run check`: formatting, zero-warning lint, root/package types, all 119 tests across 19 files and production build passed. Final documentation formatting and `git diff --check` passed; Atlas/browser suites were not rerun for this Git-only handoff.
 - Prepared the approved checkpoint on `feature/wedding-website-events`. Git history and the remote branch record the resulting commit/push outcome. No production deployment, real email/WhatsApp dispatch or deferred-bug fix is included. Next: agree M4B sending policy and controlled staging/provider acceptance.
 
+### 19 October 2026 — M4B development started
+
+- Added optional family email and the batch/worker/webhook foundation with reviewed immutable messages, atomic quota reservations and no explicit resends per owner choice. Added Svix 2.8.0 from npm for raw-body signature verification; existing auth email transport keeps its string-returning send contract while family email uses provider receipts.
+- Added migration 005 and explicit API/database contract notes through EMAIL_INVITATIONS_IMPLEMENTATION.md. Initial 11 campaign HTTP tests and five targeted Atlas tests passed. Full checks/browser verification are in progress; no development migration is yet claimed.
+- A read-only Resend check returned 401. Existing unset EMAIL_MODE still selects private outbox; no test-recipient allowlist/webhook secret is configured and no real email was sent. Continue unaffected development while live-provider acceptance remains pending.
+
 ## Update checklist for every development handoff
 
 - Update the date, milestone and affected tracker rows.
@@ -379,3 +415,64 @@ The sequence is a roadmap, not a claim that these features exist. Agree detailed
 - Record new decisions, baseline conflicts and operational limitations without secrets.
 - Append a dated history entry; preserve earlier entries.
 - Leave the next contributor a concrete next action.
+
+### 19 October 2026 — M4B implemented and verified locally
+
+- Implemented optional contact email, exact batch preview/confirmation, atomic 25-new-family daily reservations, per-family outcomes/history, encrypted durable jobs, stable-key bounded retries, signed deduplicated delivery callbacks and exact provider-record reconciliation. Both team roles retain wedding isolation and transactional authority checks. Owner chose no explicit resends.
+- Reproduced and fixed the receipt/provider-binding transaction race using a shared provider-ID write fence. Added coverage for expired/forged raw signatures, unrelated signed event types, migration recovery, concurrent quotas, confirmation replay, rollback, disabled authority, stale content/leases, safe retries and preserved intervening manual status changes.
+- Checks: root `npm run check` passed 136 tests across 22 files plus formatting, zero-warning lint, types and production build; all 26 real Atlas integration tests across five suites passed; all five real Atlas browser journeys passed. Desktop/mobile screenshots reviewed, temporary database cleanup awaited. `npm run db:migrate` applied through 005 to verified development, without business seed data. Final documentation formatting and `git diff --check` passed.
+- External limits: read-only Resend `/domains` returned HTTP 401; no real send occurred. Private EMAIL_FROM is invalid and was preserved; the migration used a temporary synthetic sender override. Existing local backend is unreachable and frontend API proxy returns 502 until private configuration is corrected/restarted. Outbox tests and mocked provider calls do not verify live acceptance/delivery.
+- Updated README, API/database/architecture/roadmap notes and EMAIL_INVITATIONS_IMPLEMENTATION.md including manual QA cases. No deferred-bug fix, production deployment, commit or push. Next: correct private settings, owner QA/controlled provider acceptance, then agree M5 expenses/tasks scope.
+
+### 19 October 2026 — M4B review finding deferred as BUG-005
+
+- Owner requested adding the reviewed P2 finding to the bug list. Recorded BUG-005 (Medium/P2): a content change after an uncertain provider attempt marks the dispatch cancelled and prevents application reconciliation. Added reproduction, evidence limits, workaround and regression acceptance criteria; no application behaviour was changed.
+- Review evidence: root `npm run check` passed formatting, zero-warning lint, types, 136 tests and production build. A separate local compiled-code harness with synthetic store/mocked transport reproduced queued timeout → wedding edit → cancelled → reconciliation rejected. Real provider acceptance was simulated; Atlas, browser and live Resend checks were not rerun for this review.
+- Documentation checks: root `npm run format:check` and `git diff --check` passed. Next: schedule BUG-005 recovery-state handling and regression coverage while preserving exact provider matching, no-resend protections and manual family changes. No fix, migration, real email, deployment, commit or push performed.
+
+### 19 October 2026 — Manual M4B QA completed
+
+- Exercised current uncommitted reviewed family email batches using built assets, isolated real Atlas and private outbox. Added MANUAL_M4B_QA.md separating manual browser journeys, 15 supplementary HTTP/Atlas checks, controlled failure/expiry fixtures and provider mocks.
+- Core exercised outbox flows passed. Daily reservations and jobs reached 25 with zero Sent families; confirmation replay, cross-wedding denial and disabled Manager checks passed. Recorded new Low/P3 BUG-006 for misleading malformed provider-ID feedback; preserved deferred Medium/P2 BUG-005 and all prior history.
+- Root build passed; targeted campaign client tests passed 3 and server tests passed 12. Server tests required a permitted rerun after sandbox listener EPERM. Root documentation formatting and diff checks passed. Historical full-root/Atlas/browser suites were not rerun in this manual pass.
+- Stopped only the isolated QA listener and awaited exact temporary database/outbox cleanup. No owner data, application code, private settings, actual email, commit, push or deployment changed. Live provider and manual mobile acceptance remain unverified; next review findings and complete controlled acceptance.
+
+### 20 October 2026 — Temporary reference photography added
+
+- Owner authorised reusing UX reference photographs until customer media is supplied. Added ten locally served sample assets and a central replacement manifest, preserving all reference material and unrelated uncommitted M4B/manual-QA work.
+- Updated landing/auth, dashboard, invitations, theme previews and all guest themes with responsive images; added sample labels and a static inspiration strip. No functional gallery, upload, customer data, permissions or retention behaviour changed.
+- Verification: root `npm run check` passed 136 tests across 22 files plus formatting/lint/types/build; `npm run test:e2e:local` passed all five existing journeys. Supplemental synthetic browser inspection confirmed all three themes load their images after scrolling at desktop/mobile widths without overflow; all ten static JPEG requests passed. Screenshots visually reviewed; isolated in-memory review listener stopped. Final formatting and diff checks passed.
+- Atlas/live Resend were not rerun for this visual change. No migration, customer data, real message, commit, push or deployment performed.
+
+### 22 October 2026 — Connectivity diagnosis and remaining-feature plan
+
+- Owner requested adding the current network IP, verifying application connectivity and listing/ordering all pending development. Preserved existing uncommitted M4B/media/application work and reference designs.
+- Read README/status and product/architecture/database/API/MongoDB baselines; compared current source modules, implementation notes and bug register. Updated DEVELOPMENT_ROADMAP.md with an ordered remaining-work inventory, dependencies and acceptance gates; corrected its stale next-feature statement. No application features were changed.
+- Verification actually run: private configuration validation passed; unsandboxed read-only Atlas ping failed with MongoServerSelectionError; backend port 3000 was unavailable; frontend-proxied readiness on port 5173 returned 502. The sandbox-only network probe was inconclusive and is superseded by these unsandboxed results. Prior successful Atlas/test results above remain historical evidence.
+- Atlas browser session redirected to login after its security view stalled. Requested owner sign-in to inspect the active network list. IP mismatch is plausible from history but not confirmed today. No Atlas access-list change, database write/migration, credential/TLS change or provider send was performed.
+- Next: finish Atlas sign-in/access inspection, prepare the narrow current-IP entry and verify application ping/readiness after the authorised update. Then schedule invitation/provider/staging acceptance and begin M5 expenses/payments, followed by tasks/overview; implement the entire photo lifecycle before enabling photos, then streaming/vendors and full pilot QA. Deferred bugs remain open; no fix is claimed.
+- Documentation validation: root `npm run format:check` and `git diff --check` passed after formatting the updated documents and removing a new trailing-space marker. No application/unit/integration/browser suite was rerun for this documentation-only change; no deployment, commit or push.
+
+### 22 October 2026 — Atlas access restored and application rechecked
+
+- Owner completed Atlas sign-in. The selected project containing the documented development cluster displayed its current-IP-added confirmation; no access-list edit was performed by the agent. The earlier session had shown another project's signed-out view. No credentials or current IP were copied into documentation.
+- The application MongoDB adapter connected, pinged and passed its readiness callback with normal TLS/private development configuration. Configuration validation passed and email remained in outbox mode.
+- Ran root `npm run dev:server`; shared compilation passed and triggered the existing development watcher to reconnect. The extra backend process hit the occupied port, so stopped only the newly started command. Preserved the existing healthy listener/frontend.
+- Verified direct port-3000 and frontend-proxied port-5173 readiness returned HTTP 200/ready, with anonymous `/api/v1/auth/me` returning 401 through both. Reloaded the browser login page and confirmed the sign-in form rendered.
+- No database writes/migrations, real email, production changes or feature implementation were performed. This verifies connection/readiness and anonymous protection only; prior schema, feature and integration results remain historical.
+- Next: use the restored local application; continue the ordered roadmap with invitation/provider/staging acceptance and M5 expenses then tasks. Documentation formatting/diff checks passed. No commit/push.
+
+### 22 October 2026 — Owner saved temporary all-IPv4 Atlas access
+
+- Owner explicitly requested temporary `0.0.0.0/0` network access after recurring dynamic-IP interruptions. Prepared the Project 0 access-list entry with one-week automatic expiry; owner saved it in Atlas. Independently observed the entry Active, with scheduled deletion on 29 October 2026 at 13:04:35 Asia/Kolkata.
+- This is an explicit temporary exception to the earlier narrow-IP operational guidance: any IPv4 source can attempt a database connection while the rule exists. Database credentials, TLS, application permissions, wedding isolation and retention remain unchanged. Existing narrow entries were preserved. No credentials or client IP values are recorded here.
+- Verification: a fresh connection through the application MongoDB adapter, ping and readiness callback passed; direct backend and frontend-proxied readiness both returned HTTP 200. This does not establish connectivity from another network or prove schema/write acceptance anew.
+- Next: replace the temporary broad entry with stable approved application egress/narrow access before expiry or production release. Dynamic-IP restrictions can recur after automatic deletion if the current address is not covered by a remaining entry.
+- No application code, database records/migrations, provider sends, production deployment or Git commit/push changed. Documentation formatting and diff checks passed.
+
+### 22 October 2026 — Owner authorised GitHub Desktop checkpoint and expenses development
+
+- Owner requested committing/pushing the pending work through GitHub Desktop before developing the next feature. Reviewed the 62 pending files: M4B reviewed email batches, sample reference photography, QA notes and updated connectivity/roadmap documentation. Private environment/local outbox/build artifacts and reference designs remain excluded.
+- Fresh root `npm run check` passed formatting, zero-warning lint, types, all 136 tests across 22 files and production build. This is credential-free verification; historical Atlas/browser results and live email limitations remain unchanged.
+- Next feature authorised: M5A expenses and payments, including precise INR amounts, payment history, explicit outstanding/overpaid balances, event/category/payer filters, revision/idempotency protection and wedding isolation. Tasks remain the following feature.
+- Commit/push result will be recorded after GitHub Desktop completes. No production deployment or provider send is included.

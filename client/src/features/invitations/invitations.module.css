@@ -163,3 +163,48 @@
     gap: 1rem;
   }
 }
+.message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.panel > .check {
+  flex-direction: row;
+  align-items: flex-start;
+}
+.check input {
+  flex: none;
+  margin-top: 0.25rem;
+}
+.mailCard {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stationery {
+  float: right;
+  width: min(40%, 18rem);
+  margin: 0 0 1.5rem 2rem;
+}
+.stationery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+.stationery figcaption {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
+}
+.stationery ~ .summary {
+  clear: both;
+}
+@media (max-width: 650px) {
+  .stationery {
+    float: none;
+    width: 100%;
+    margin: 1rem 0;
+  }
+}

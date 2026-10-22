@@ -30,6 +30,18 @@ const PersonalInvitationPage = lazy(() =>
     default: m.PersonalInvitationPage,
   })),
 );
+const EmailBatchesPage = lazy(() =>
+  import('../features/invitations/EmailBatchesPage.js').then((m) => ({
+    default: m.EmailBatchesPage,
+  })),
+);
+export function EmailBatchesRoute() {
+  return (
+    <Pending>
+      <EmailBatchesPage />
+    </Pending>
+  );
+}
 export function InvitationsRoute() {
   return (
     <Pending>

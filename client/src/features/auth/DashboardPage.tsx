@@ -5,6 +5,7 @@ import { ApiClientError } from '../../api/client.js';
 import { logout } from './api.js';
 import { useSession, updateSession } from './hooks.js';
 import styles from './auth.module.css';
+import { demoMedia } from '../website/demo-media.js';
 
 export function DashboardPage() {
   const { data } = useSession();
@@ -62,19 +63,30 @@ export function DashboardPage() {
           A little space to bring your celebration together.
         </p>
         <section className={styles.weddingCard}>
-          <p className={styles.eyebrow}>Your wedding</p>
-          <h2>
-            {data.wedding.couple.partner1Name} <span>&</span>{' '}
-            {data.wedding.couple.partner2Name}
-          </h2>
-          <p>
-            {date} · {data.wedding.timezone}
-          </p>
-          <span className={styles.badge}>
-            {data.wedding.publicationStatus === 'draft'
-              ? 'Website unpublished'
-              : 'Website published'}
-          </span>
+          <div className={styles.weddingDetails}>
+            <p className={styles.eyebrow}>Your wedding</p>
+            <h2>
+              {data.wedding.couple.partner1Name} <span>&</span>{' '}
+              {data.wedding.couple.partner2Name}
+            </h2>
+            <p>
+              {date} · {data.wedding.timezone}
+            </p>
+            <span className={styles.badge}>
+              {data.wedding.publicationStatus === 'draft'
+                ? 'Website unpublished'
+                : 'Website published'}
+            </span>
+          </div>
+          <figure className={styles.planningPhoto}>
+            <img
+              src={demoMedia.planning}
+              alt="Sample wedding courtyard decorated with flowers and lanterns"
+              width="512"
+              height="286"
+            />
+            <figcaption>Sample photography</figcaption>
+          </figure>
         </section>
         <p>
           <Link to="/website">Manage wedding website</Link> ·{' '}

@@ -29,6 +29,10 @@ const envSchema = z
       .optional(),
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.email().optional(),
+    RESEND_WEBHOOK_SECRET: z
+      .string()
+      .regex(/^whsec_[A-Za-z0-9+/=_-]+$/)
+      .optional(),
     EMAIL_ALLOWED_RECIPIENTS: z
       .string()
       .default('')

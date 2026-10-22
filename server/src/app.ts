@@ -1,3 +1,5 @@
+import { campaignWebhook } from './modules/campaigns/campaigns.routes.js';
+import type { CampaignService } from './modules/campaigns/campaigns.service.js';
 import { invitationPublicRoutes } from './modules/invitations/invitations.routes.js';
 import type { InvitationService } from './modules/invitations/invitations.service.js';
 import { websitePublicRoutes } from './modules/website/website.public.js';
@@ -24,6 +26,8 @@ export interface AppDependencies {
   access?: AccessService;
   website?: WebsiteService;
   invitations?: InvitationService;
+  campaigns?: CampaignService;
+  resendWebhookSecret?: string;
   auth?: { service: AuthService; options: AuthHttpOptions };
 }
 
@@ -49,6 +53,12 @@ export function createApp(dependencies: AppDependencies) {
   );
   app.use(helmet({ referrerPolicy: { policy: 'no-referrer' } }));
 
+  if (dependencies.campaigns)
+    app.post(
+      '/api/v1/webhooks/resend',
+      express.raw({ type: 'application/json', limit: '64kb' }),
+      campaignWebhook(dependencies.campaigns, dependencies.resendWebhookSecret),
+    );
   const api = express.Router();
   api.use((_req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -75,6 +85,7 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.access,
         dependencies.website,
         dependencies.invitations,
+        dependencies.campaigns,
       ),
     );
   api.use(apiNotFound);

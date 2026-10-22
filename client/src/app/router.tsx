@@ -1,4 +1,5 @@
 import {
+  EmailBatchesRoute,
   InvitationsRoute,
   PersonalInvitationRoute,
   WebsiteRoute,
@@ -88,6 +89,14 @@ export const router = createBrowserRouter([
   },
   { path: '/w/:slug/invite/:token', element: <PersonalInvitationRoute /> },
   { path: '/w/:slug/invite', element: <PersonalInvitationRoute /> },
+  {
+    path: '/invitations/email',
+    element: (
+      <AccessGate>
+        <EmailBatchesRoute />
+      </AccessGate>
+    ),
+  },
   { path: '/w/:slug', element: <GuestRoute /> },
   { path: '*', element: <NotFoundPage /> },
 ]);

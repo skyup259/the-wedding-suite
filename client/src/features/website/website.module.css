@@ -551,3 +551,129 @@
 .invitedList .contacts {
   justify-content: center;
 }
+
+/* Temporary reference photography; keep customer-media integration in demo-media.ts. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 2.5rem;
+}
+.heroCopy {
+  min-width: 0;
+}
+.hero :is(h1, h2) {
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+}
+.heroPhoto {
+  margin: 0;
+  min-width: 0;
+}
+.heroPhoto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 12rem 12rem 0.5rem 0.5rem;
+}
+.heroPhoto figcaption {
+  font-size: 0.7rem;
+  margin-top: 0.8rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.guest[data-theme='floral'] .hero {
+  border-radius: 1.5rem;
+  padding-top: 2.5rem;
+}
+.guest[data-theme='minimal'] .heroPhoto img {
+  border-radius: 0;
+}
+.ceremonyPhoto {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+.inspiration {
+  max-width: 68rem;
+  margin: 4rem auto;
+  padding: 0 2rem;
+}
+.inspiration h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0.5rem 0;
+}
+.inspiration > p:not(.eyebrow) {
+  max-width: 40rem;
+  font-size: 0.9rem;
+}
+.inspirationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.inspirationGrid img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.themeSwatch {
+  position: relative;
+  overflow: hidden;
+  height: 150px;
+  border-radius: 0.4rem;
+}
+.themeSwatch img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.themeSwatch > span {
+  position: relative;
+  padding: 0.2rem 0.6rem;
+  color: #fff;
+  background: #1d281ccc;
+  border-radius: 0.3rem;
+}
+@media (max-width: 700px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  .heroPhoto {
+    grid-row: 1;
+  }
+  .heroPhoto img {
+    aspect-ratio: 1;
+    max-height: 26rem;
+  }
+  .guest[data-theme='floral'] .hero {
+    padding-top: 1.5rem;
+  }
+  .ceremonyPhoto {
+    aspect-ratio: 16 / 9;
+    max-height: 17rem;
+  }
+  .inspiration {
+    margin: 3rem auto;
+    padding: 0 1.25rem;
+  }
+  .inspirationGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .inspirationGrid img {
+    aspect-ratio: 16 / 10;
+  }
+}

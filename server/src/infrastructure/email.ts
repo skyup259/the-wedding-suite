@@ -61,6 +61,9 @@ export class ResendTransport implements EmailTransport {
     private request: typeof fetch = fetch,
   ) {}
   async send(mail: Mail, key: string) {
+    return (await this.sendWithReceipt(mail, key)).outcome;
+  }
+  async sendWithReceipt(mail: Mail, key: string) {
     if (this.allowed && !this.allowed.includes(mail.to))
       throw new EmailFailure('RECIPIENT_NOT_ALLOWED', true);
     let response: Response;
@@ -91,13 +94,43 @@ export class ResendTransport implements EmailTransport {
           ![408, 409, 429].includes(response.status),
       );
     const json: unknown = await response.json().catch(() => null);
-    if (!z.object({ id: z.string().min(1) }).safeParse(json).success)
-      throw new EmailFailure('PROVIDER_INVALID_RESPONSE');
-    return 'accepted' as const;
+    const result = z.object({ id: z.string().min(1) }).safeParse(json);
+    if (!result.success) throw new EmailFailure('PROVIDER_INVALID_RESPONSE');
+    return { outcome: 'accepted' as const, providerId: result.data.id };
+  }
+  async retrieve(id: string) {
+    const res = await this.request(
+      `https://api.resend.com/emails/${encodeURIComponent(id)}`,
+      {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+        signal: AbortSignal.timeout(15000),
+      },
+    );
+    if (!res.ok) throw new EmailFailure('RECONCILIATION_LOOKUP_FAILED');
+    const result = z
+      .object({
+        to: z.array(z.email()),
+        subject: z.string(),
+        text: z.string(),
+        created_at: z.string(),
+        last_event: z.string(),
+      })
+      .safeParse(await res.json());
+    if (!result.success) throw new EmailFailure('RECONCILIATION_LOOKUP_FAILED');
+    return {
+      to: result.data.to,
+      subject: result.data.subject,
+      text: result.data.text,
+      createdAt: new Date(result.data.created_at),
+      lastEvent: result.data.last_event,
+    };
   }
 }
 export class OutboxTransport implements EmailTransport {
   constructor(private directory: string) {}
+  async sendWithReceipt(mail: Mail, key: string) {
+    return { outcome: await this.send(mail, key), providerId: null };
+  }
   async send(mail: Mail, key: string) {
     await mkdir(this.directory, { recursive: true, mode: 0o700 });
     const path = `${this.directory}/${key.replaceAll('/', '-')}.json`,
@@ -142,7 +175,7 @@ export async function emailRuntime(config: Environment) {
     key = (await readFile(path, 'utf8')).trim();
   }
   const vault = new EmailVault(Buffer.from(key, 'hex'));
-  const transport: EmailTransport =
+  const transport =
     config.EMAIL_MODE === 'resend'
       ? new ResendTransport(
           config.RESEND_API_KEY!,
@@ -152,5 +185,5 @@ export async function emailRuntime(config: Environment) {
             : null,
         )
       : new OutboxTransport(`${directory}/outbox`);
-  return { vault, transport };
+  return { vault, transport, mode: config.EMAIL_MODE as 'outbox' | 'resend' };
 }

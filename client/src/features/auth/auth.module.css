@@ -265,3 +265,46 @@
     gap: 0;
   }
 }
+
+.storyPhoto {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 2rem;
+  border-radius: 8rem 8rem 0.75rem 0.75rem;
+  object-fit: cover;
+  aspect-ratio: 16 / 10;
+}
+.weddingCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+.weddingDetails {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.planningPhoto {
+  margin: 0;
+}
+.planningPhoto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.planningPhoto figcaption {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  margin-top: 0.5rem;
+}
+@media (max-width: 700px) {
+  .weddingCard {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+}

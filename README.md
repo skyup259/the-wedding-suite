@@ -4,7 +4,11 @@ An Indian wedding management application, built as a modular monolith. The first
 
 Start with [PROJECT_STATUS.md](./PROJECT_STATUS.md) for progress, decisions, verification, and the next development milestone. Update that document with every meaningful development change. [AGENTS.md](./AGENTS.md) makes this handoff requirement explicit for future coding agents and contributors.
 
-Manual family invitations and attendance estimates are implemented as M4A at `/invitations`; see [INVITATIONS_IMPLEMENTATION.md](./INVITATIONS_IMPLEMENTATION.md) for personal links, encryption-key setup and current verification limits. Family email batches remain future M4B work.
+Manual family invitations and attendance estimates are implemented as M4A at `/invitations`; see [INVITATIONS_IMPLEMENTATION.md](./INVITATIONS_IMPLEMENTATION.md) for personal links, encryption-key setup and current verification limits. Reviewed family email batches are implemented as M4B.
+
+M4B reviewed email batches are available at `/invitations/email`; [EMAIL_INVITATIONS_IMPLEMENTATION.md](./EMAIL_INVITATIONS_IMPLEMENTATION.md) records reviewed sending, safe retries and required provider setup. Explicit resends are disabled; safe retries preserve the original message. Adding a key alone keeps development in outbox mode. Live provider delivery remains unverified.
+
+Temporary photographs from the UX references now appear across the site until approved customer photos are supplied. [Image sources and replacement notes](./client/public/images/demo/README.md) document the shared replacement manifest; these samples are separate from future managed photo uploads.
 
 See [BUG_BACKLOG.md](./BUG_BACKLOG.md) for deferred bugs ranked by severity/priority, reproduction steps, causes, fixed regressions and pending QA tasks.
 
@@ -79,7 +83,7 @@ Run one development entry point at a time. Root scripts prepare shared output au
 | `server/` | Express, TypeScript, MongoDB driver, validated configuration and HTTP foundation |
 | `shared/` | Browser-safe Zod schemas and API types                                           |
 
-Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, `@wedding-suite/shared/auth`, `@wedding-suite/shared/access`, `@wedding-suite/shared/website`, and `@wedding-suite/shared/invitations` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
+Shared exports `@wedding-suite/shared`, `@wedding-suite/shared/http`, `@wedding-suite/shared/themes`, `@wedding-suite/shared/auth`, `@wedding-suite/shared/access`, `@wedding-suite/shared/website`, `@wedding-suite/shared/invitations`, and `@wedding-suite/shared/campaigns` through compiled ESM and declaration files in `shared/dist`. Source/internal paths are not public exports. No MongoDB documents, credentials, or backend services belong in shared.
 
 All development entry points build shared first. TypeScript then watches shared with `noEmitOnError`; backend watch explicitly includes shared emitted JavaScript. Vite observes the linked package without pre-bundling it. A shared compilation failure leaves the last valid runtime output in use while the compiler reports the error; correct it to resume updates. `check` must pass before handing changes off.
 

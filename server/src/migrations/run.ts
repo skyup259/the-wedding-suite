@@ -1,3 +1,4 @@
+import { migrateCampaigns } from './005-invitation-email.js';
 import { migrateInvitations } from './004-family-invitations.js';
 import { loadDevelopmentEnvironment } from '../config/load-env.js';
 import { parseEnvironment } from '../config/env.js';
@@ -18,8 +19,9 @@ try {
     await migrateAccess(database.db);
     await migrateWebsite(database.db);
     await migrateInvitations(database.db);
+    await migrateCampaigns(database.db);
     console.log(
-      'Authentication, team/recovery, website/events and family invitation schema migrations complete. No wedding records seeded.',
+      'Authentication, team/recovery, website/events, family invitation and email batch schema migrations complete. No wedding records seeded.',
     );
   } finally {
     await database.close();

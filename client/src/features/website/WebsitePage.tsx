@@ -13,6 +13,7 @@ import { Field } from '../auth/Field.js';
 import { ApiClientError } from '../../api/client.js';
 import { updateSession, sessionKey } from '../auth/hooks.js';
 import { WorkspaceFrame, QueryFailure } from './WorkspaceFrame.js';
+import { demoMedia } from './demo-media.js';
 import * as api from './api.js';
 import styles from './website.module.css';
 export function WebsitePage() {
@@ -204,7 +205,14 @@ function WebsiteEditor({ initial }: { initial: Wedding }) {
                   {...form.register('website.themeId')}
                 />
                 <span className={styles.themeSwatch} aria-hidden="true">
-                  A & B
+                  <img
+                    src={demoMedia.covers[t.id]}
+                    alt=""
+                    width="512"
+                    height="286"
+                    loading="lazy"
+                  />
+                  <span>A & B</span>
                 </span>
                 <strong>{t.label}</strong>
                 <span>{t.description}</span>
@@ -222,8 +230,8 @@ function WebsiteEditor({ initial }: { initial: Wedding }) {
             ))}
           </select>
           <p className={styles.muted}>
-            Each theme keeps the same ceremonies and links. A decorative cover
-            is used until photo management is available.
+            Each theme keeps the same ceremonies and links. Sample photographs
+            from the design collection are used until your own photos are ready.
           </p>
         </section>
         <section className={styles.panel}>

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getReadiness } from '../api/health.js';
 import styles from './ScaffoldPage.module.css';
 import { Link } from 'react-router';
+import { demoMedia } from '../features/website/demo-media.js';
 
 export function ScaffoldPage() {
   const readiness = useQuery({
@@ -12,6 +13,13 @@ export function ScaffoldPage() {
   return (
     <main className={styles.page}>
       <div className={styles.card}>
+        <img
+          className={styles.cover}
+          src={demoMedia.planning}
+          alt=""
+          width="512"
+          height="286"
+        />
         <p className={styles.eyebrow}>The Wedding Suite</p>
         <h1>A place for every celebration.</h1>
         <p>

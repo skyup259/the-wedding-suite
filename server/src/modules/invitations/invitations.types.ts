@@ -6,6 +6,8 @@ export interface InvitationRecord extends Omit<InvitationInput, 'eventIds'> {
   _id: ObjectId;
   weddingId: ObjectId;
   eventIds: ObjectId[];
+  emailSequence?: number;
+  emailLastQueuedAt?: Date;
   tokenHash: string;
   tokenCiphertext: string;
   tokenKeyVersion: number;

@@ -28,7 +28,9 @@ export function safeInvitation(c: InvitationContext) {
     familyDisplayName: i.familyDisplayName,
     contactName: i.contactName,
     phone: i.phone,
+    ...(i.email !== undefined ? { email: i.email } : {}),
     eventIds: i.eventIds.map((id) => id.toHexString()),
+    emailQueued: (i.emailSequence ?? 0) > 0,
     revision: i.revision,
     sentStatus: i.sentStatus,
     sentAt: i.sentAt?.toISOString() ?? null,
@@ -222,6 +224,7 @@ export class InvitationService {
               familyDisplayName: i.familyDisplayName,
               contactName: i.contactName,
               phone: i.phone,
+              ...(i.email !== undefined ? { email: i.email } : {}),
               eventIds: i.eventIds.map(String),
               ...patch,
             });
@@ -291,7 +294,7 @@ export class InvitationService {
     this.present(c);
     return this.shareContext(c!);
   }
-  private shareContext(c: InvitationContext) {
+  shareContext(c: InvitationContext) {
     const i = this.present(c);
     if (c.wedding.publicationStatus !== 'published')
       throw new HttpError(

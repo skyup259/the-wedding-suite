@@ -1,3 +1,8 @@
+import { migrateCampaigns } from '../src/migrations/005-invitation-email.js';
+import { CampaignService } from '../src/modules/campaigns/campaigns.service.js';
+import { MongoCampaignStore } from '../src/modules/campaigns/campaigns.repository.js';
+import { MemoryCampaignStore } from './helpers/memory-campaign-store.js';
+import { InvitationEmailWorker } from '../src/jobs/invitation-email.js';
 import { migrateInvitations } from '../src/migrations/004-family-invitations.js';
 import { MongoInvitationStore } from '../src/modules/invitations/invitations.repository.js';
 import { InvitationService } from '../src/modules/invitations/invitations.service.js';
@@ -33,12 +38,14 @@ const database =
     : await createTestDatabase(process.env.AUTH_E2E_DATABASE_NAME);
 const outbox = e2eOutbox(process.env.AUTH_E2E_DATABASE_NAME);
 let worker: AuthEmailWorker | undefined;
+let campaignWorker: InvitationEmailWorker | undefined;
 try {
   if (database) {
     await migrateAuth(database.db);
     await migrateAccess(database.db);
     await migrateWebsite(database.db);
     await migrateInvitations(database.db);
+    await migrateCampaigns(database.db);
   }
   const authStore = database
     ? new MongoAuthStore(database.client, database.db)
@@ -67,6 +74,21 @@ try {
     website,
     'http://127.0.0.1:3101',
   );
+  const campaigns = new CampaignService(
+    database
+      ? new MongoCampaignStore(database.client, database.db)
+      : new MemoryCampaignStore(invitations.store as MemoryInvitationStore),
+    invitations,
+    vault,
+    'outbox',
+    null,
+    new OutboxTransport(outbox),
+  );
+  campaignWorker = new InvitationEmailWorker(
+    campaigns,
+    vault,
+    new OutboxTransport(outbox),
+  );
   const app = createApp({
     logger: createLogger('silent'),
     checkReady: async () => {
@@ -78,6 +100,7 @@ try {
     access,
     website,
     invitations,
+    campaigns,
     auth: {
       service: auth,
       options: {
@@ -89,6 +112,7 @@ try {
   });
   const server = app.listen(3101, '127.0.0.1', () => {
     worker?.start();
+    campaignWorker?.start();
     console.log('Isolated browser-test server ready.');
   });
   let stopping = false;
@@ -97,7 +121,7 @@ try {
     stopping = true;
     server.closeAllConnections();
     server.close();
-    await worker?.stop();
+    await Promise.all([worker?.stop(), campaignWorker?.stop()]);
     await database?.cleanup();
     await rm(outbox, { recursive: true, force: true });
   }
@@ -113,7 +137,7 @@ try {
     });
   });
 } catch {
-  await worker?.stop();
+  await Promise.all([worker?.stop(), campaignWorker?.stop()]);
   await database?.cleanup();
   await rm(outbox, { recursive: true, force: true });
   console.error(

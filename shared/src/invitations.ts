@@ -6,6 +6,12 @@ const required = z.string().trim().min(1, 'This field is required.').max(120);
 export const invitationInputSchema = z.strictObject({
   familyDisplayName: required,
   contactName: required,
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(z.union([z.literal(''), z.email().max(254)]))
+    .optional(),
   phone: z
     .string()
     .trim()
@@ -36,6 +42,7 @@ export const invitationTokenSchema = z.strictObject({
 });
 export const invitationSchema = invitationInputSchema.extend({
   id: invitationIdSchema,
+  emailQueued: z.boolean().optional(),
   revision: z.number().int().positive(),
   sentStatus: z.enum(['sent', 'not_sent']),
   sentAt: z.iso.datetime().nullable(),

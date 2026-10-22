@@ -14,6 +14,7 @@ import type {
 } from '@wedding-suite/shared/invitations';
 import type { WeddingEvent } from '@wedding-suite/shared/website';
 import { WorkspaceFrame, QueryFailure } from '../website/WorkspaceFrame.js';
+import { demoMedia } from '../website/demo-media.js';
 import {
   events as loadEvents,
   wedding as loadWedding,
@@ -120,6 +121,18 @@ export function InvitationsPage() {
   const items = list.data?.pages.flatMap((p) => p.data) ?? [];
   return (
     <WorkspaceFrame title="Families & invitations" error={failure}>
+      <figure className={styles.stationery}>
+        <img
+          src={demoMedia.stationery}
+          alt="Sample ivory wedding stationery with gold botanical details"
+          width="512"
+          height="286"
+        />
+        <figcaption>Sample invitation inspiration</figcaption>
+      </figure>
+      <p>
+        <Link to="/invitations/email">Prepare family email batch</Link>
+      </p>
       <p>
         Invite each family to your celebrations. Share their personal link, then
         mark Sent when you have sent it.
@@ -478,6 +491,7 @@ function FamilyEditor({
           familyDisplayName: item.familyDisplayName,
           contactName: item.contactName,
           phone: item.phone,
+          ...(item.email !== undefined ? { email: item.email } : {}),
           eventIds: [...item.eventIds],
         }
       : { familyDisplayName: '', contactName: '', phone: '', eventIds: [] },
@@ -547,6 +561,15 @@ function FamilyEditor({
               maxLength={25}
               value={value.phone}
               onChange={(e) => setValue({ ...value, phone: e.target.value })}
+            />
+          </label>
+          <label>
+            Contact email (optional)
+            <input
+              type="email"
+              maxLength={254}
+              value={value.email ?? ''}
+              onChange={(e) => setValue({ ...value, email: e.target.value })}
             />
           </label>
         </div>

@@ -9,6 +9,7 @@ import { WorkspaceFrame, QueryFailure } from './WorkspaceFrame.js';
 import { statusLabel } from './calendar.js';
 import * as api from './api.js';
 import styles from './website.module.css';
+import { demoMedia } from './demo-media.js';
 export function GuestView({
   model,
   invitation,
@@ -99,20 +100,36 @@ export function GuestView({
           </section>
         )}
         <section id="welcome" className={styles.hero}>
-          <div className={styles.ornament} aria-hidden="true">
-            ✳
+          <div className={styles.heroCopy}>
+            <div className={styles.ornament} aria-hidden="true">
+              ✳
+            </div>
+            <p className={styles.eyebrow}>Together with our families</p>
+            <CoupleHeading>
+              <span>{w.couple.partner1Name}</span>
+              <em>&</em>
+              <span>{w.couple.partner2Name}</span>
+            </CoupleHeading>
+            <p className={styles.date}>{mainDate}</p>
+            {w.website.intro && (
+              <p className={styles.intro}>{w.website.intro}</p>
+            )}
+            <a className={styles.guestButton} href="#schedule">
+              Explore the celebrations <span aria-hidden="true">↓</span>
+            </a>
           </div>
-          <p className={styles.eyebrow}>Together with our families</p>
-          <CoupleHeading>
-            <span>{w.couple.partner1Name}</span>
-            <em>&</em>
-            <span>{w.couple.partner2Name}</span>
-          </CoupleHeading>
-          <p className={styles.date}>{mainDate}</p>
-          {w.website.intro && <p className={styles.intro}>{w.website.intro}</p>}
-          <a className={styles.guestButton} href="#schedule">
-            Explore the celebrations <span aria-hidden="true">↓</span>
-          </a>
+          <figure className={styles.heroPhoto}>
+            <img
+              src={demoMedia.covers[w.website.themeId]}
+              alt="Sample wedding portrait from the design collection"
+              width="512"
+              height="512"
+              fetchPriority="high"
+            />
+            <figcaption>
+              Sample photography · Your photos will make this yours.
+            </figcaption>
+          </figure>
         </section>
         {w.website.welcomeMessage && (
           <section className={styles.welcome}>
@@ -185,6 +202,14 @@ export function GuestView({
                 id={`ceremony-${e.id}`}
               >
                 <div className={styles.ceremonyDate}>
+                  <img
+                    className={styles.ceremonyPhoto}
+                    src={demoMedia.ceremonies[i % demoMedia.ceremonies.length]}
+                    alt=""
+                    width="512"
+                    height="300"
+                    loading="lazy"
+                  />
                   <span>{String(i + 1).padStart(2, '0')}</span>
                   <p>{day(e.startAt)}</p>
                   <strong>
@@ -245,6 +270,29 @@ export function GuestView({
               </article>
             ))
           )}
+        </section>
+        <section
+          className={styles.inspiration}
+          aria-labelledby="inspiration-heading"
+        >
+          <p className={styles.eyebrow}>Little details, lasting memories</p>
+          <h2 id="inspiration-heading">Celebration inspiration</h2>
+          <p>
+            Sample photographs from our design collection, ready to be replaced
+            with your own memories.
+          </p>
+          <div className={styles.inspirationGrid}>
+            {demoMedia.inspiration.map((photo) => (
+              <img
+                key={photo.src}
+                src={photo.src}
+                alt={photo.alt}
+                width="512"
+                height="286"
+                loading="lazy"
+              />
+            ))}
+          </div>
         </section>
       </main>
       <footer className={styles.guestFooter}>

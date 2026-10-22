@@ -1,6 +1,6 @@
 # Bug backlog and deferred improvements
 
-Last updated: 18 October 2026 (Asia/Kolkata). Baseline: M3 commit `3c68675` on `feature/wedding-website-events`.
+Last updated: 19 October 2026 (Asia/Kolkata). Original QA baseline: M3 commit `3c68675` on `feature/wedding-website-events`; BUG-005 and BUG-006 concern the uncommitted M4B implementation after M4A commit `8811aef`.
 
 The owner requested that the current noncritical findings be documented for later review instead of fixed now. This register consolidates existing QA evidence; creating it does not constitute a new application test or a claim that every flow is defect-free. No fixes are included in this documentation change.
 
@@ -22,15 +22,17 @@ Severity describes observed impact. Priority describes when to act. For validati
 | P2       | Plan a follow-up fix or acceptance task; may proceed with unrelated development. |
 | P3       | Deferred polish; review in a later maintenance pass.                             |
 
-There are **three open Low / P3 bugs** in the recorded QA. No open Critical or High defect was reported in those exercised cases. Incomplete validation and environment prerequisites are listed separately below; they do not establish a product bug.
+There are **five open bugs: one Medium / P2 and four Low / P3**. No open Critical or High defect was reported in those exercised cases. Incomplete validation and environment prerequisites are listed separately below; they do not establish a product bug.
 
 ## Open bug summary
 
-| ID      | Feature    | Finding                                                  | Severity | Priority | Status                   |
-| ------- | ---------- | -------------------------------------------------------- | -------- | -------- | ------------------------ |
-| BUG-001 | Signup     | Missing wedding date shows technical validation text     | Low      | P3       | Open — deferred by owner |
-| BUG-002 | Signup     | Duplicate-email error appears twice                      | Low      | P3       | Open — deferred by owner |
-| BUG-003 | Ceremonies | Last-ceremony archive rejection uses publication wording | Low      | P3       | Open — deferred by owner |
+| ID      | Feature      | Finding                                                           | Severity | Priority | Status                    |
+| ------- | ------------ | ----------------------------------------------------------------- | -------- | -------- | ------------------------- |
+| BUG-001 | Signup       | Missing wedding date shows technical validation text              | Low      | P3       | Open — deferred by owner  |
+| BUG-002 | Signup       | Duplicate-email error appears twice                               | Low      | P3       | Open — deferred by owner  |
+| BUG-003 | Ceremonies   | Last-ceremony archive rejection uses publication wording          | Low      | P3       | Open — deferred by owner  |
+| BUG-005 | Family email | Content edits cancel uncertain sends and block reconciliation     | Medium   | P2       | Open — deferred by owner  |
+| BUG-006 | Family email | Invalid provider-ID feedback references absent field highlighting | Low      | P3       | Open — found in manual QA |
 
 ### BUG-001 — Technical missing-date message
 
@@ -71,6 +73,32 @@ There are **three open Low / P3 bugs** in the recorded QA. No open Critical or H
 - **Suggested fix:** Provide action-appropriate messaging while keeping transactional publication validation and revision checks.
 - **Acceptance:** Last-ceremony archive remains blocked while published, the explanation gives a usable next step, and ordinary archive/unpublish flows still work.
 
+### BUG-005 — Uncertain email send loses reconciliation after a content edit
+
+- **Status / severity / priority:** Open — deferred by owner; Medium / P2. Recorded on 19 October 2026 after review of the uncommitted M4B changes.
+- **Evidence:** A local reproduction against the compiled worker/service with a synthetic in-memory store and mocked transport produced `queued / PROVIDER_UNAVAILABLE` → wedding revision change → `cancelled / MESSAGE_CHANGED`; reconciliation then returned `RECONCILIATION_REQUIRED`. No real provider acceptance or delivery was exercised.
+- **Reproduction:** Confirm a live-mode family email batch in an isolated test fixture. Simulate a provider accepting the email but losing its response, so the transport throws `PROVIDER_UNAVAILABLE`. Before the scheduled retry, edit the wedding or family so its reviewed revision changes. Advance to the retry, run the worker, then attempt reconciliation using the matching provider record.
+- **Actual:** The worker labels the dispatch cancelled and clears its payload. The reconciliation service accepts only `unknown` dispatches, so this potentially delivered email can no longer be reconciled through the application.
+- **Expected:** Stop sending stale content while preserving an uncertain, reconcilable outcome if an earlier attempt may have succeeded. Use cancelled only when the send is known not to have occurred.
+- **Impact:** Results can misreport a potentially delivered email as cancelled, with no application reconciliation path. Provider records can still be inspected independently; the no-resend policy continues to prevent a new dispatch for that family.
+- **Known cause:** The content/mode/publication guard in `server/src/jobs/invitation-email.ts` unconditionally transitions to cancelled, including after a transient uncertain attempt. `CampaignService.reconcile` in `server/src/modules/campaigns/campaigns.service.ts` rejects every status except unknown.
+- **Priority reason:** Outcome tracking and recovery are impaired under timeout-plus-edit conditions. Plan a follow-up fix; unrelated development may continue.
+- **Workaround:** Inspect the original provider record independently and avoid another send. There is no supported application reconciliation workaround once the dispatch is cancelled; do not alter dispatch records or bypass resend protections manually.
+- **Suggested fix:** Track whether a previous send may have succeeded and preserve an unknown/reconcilable state when stale content prevents retry. Keep the original recipient/message hashes, stable dispatch identity, current authorisation and exact provider-match checks.
+- **Acceptance:** Add a regression for provider acceptance with a lost response followed by a wedding/family edit or publication/mode change. No further send occurs; the dispatch remains reconcilable against the exact provider record, with no duplicate dispatch or quota reservation and no overwrite of intervening manual family changes. A stale job that has never attempted sending still cancels normally.
+
+### BUG-006 — Provider-ID validation gives no actionable field feedback
+
+- **Status / severity / priority:** Open — found in manual QA on 19 October 2026; Low / P3. No application fix included.
+- **Evidence:** [Manual M4B QA](./MANUAL_M4B_QA.md), desktop browser against built assets and isolated real Atlas/private outbox. Unknown status was a controlled fixture, not an actual provider timeout.
+- **Reproduction:** Open a batch containing an unknown dispatch, enter `not-a-provider-id` in Provider email ID, and select Verify provider record.
+- **Actual:** The server rejects the value. The alert says “Check the highlighted fields,” but the field has no highlight, `aria-invalid` indication or UUID-format guidance. The entered value remains.
+- **Expected:** Identify the affected field and explain the accepted provider-ID format with accessible, actionable feedback.
+- **Impact:** Minor recovery confusion; invalid reconciliation is correctly rejected and no dispatch status changes.
+- **Known cause:** `EmailBatchesPage.tsx` supplies a required text input and surfaces the generic API validation message without mapping field errors; the server validates a UUID.
+- **Workaround:** Enter the exact valid provider email UUID. Actual provider lookup additionally requires working live configuration.
+- **Acceptance:** Malformed IDs receive clear associated format feedback and invalid-field state, retain input and do not mutate results; matching valid records still use the existing verification rules.
+
 ## Fixed issue retained for regression tracking
 
 ### BUG-004 — Stale settings after publication
@@ -108,6 +136,7 @@ These tasks can be scheduled later. A P2 acceptance task does not block unrelate
 ## Review and maintenance
 
 - Owner decision: defer BUG-001–003 and review later. No fix date or assignee is committed; suggested owner is the next developer/QA reviewer assigned to the maintenance pass.
+- Owner decision on 19 October 2026: record BUG-005 as P2 for later work; no application fix is requested in this handoff.
 - When reviewing an item, reproduce it against the current commit first. Record the environment, expected/actual result and sanitised evidence; never include credentials, personal contact data, capability links or tokens.
 - Keep stable IDs. Use Open → In progress → Fixed, awaiting verification → Verified/closed, or record why an item was not reproduced. Record the fix commit and checks before closing.
 - Reassess severity if new evidence shows blocked workflows, data loss or privacy impact. A new confirmed serious defect must receive its own assessment rather than inheriting the current Low rating.
@@ -117,6 +146,7 @@ These tasks can be scheduled later. A P2 acceptance task does not block unrelate
 
 - [Manual authentication QA](./MANUAL_AUTH_QA.md): original QA-01/QA-02 and their reproduction details.
 - [Manual M2/M3 QA](./MANUAL_M2_M3_QA.md): archive wording, fixed publication regression and manual coverage limits.
+- [Manual M4B QA](./MANUAL_M4B_QA.md): reviewed batches, outbox, quota and permission checks; BUG-006 and external-service limits.
 - [Manual M4A QA](./MANUAL_M4A_QA.md): family/reference archive and larger-list acceptance, with browser/HTTP methods distinguished.
 - [Project status](./PROJECT_STATUS.md): historical automated/Atlas/browser results and external-service limits.
 - [Development roadmap](./DEVELOPMENT_ROADMAP.md): future feature scope and release prerequisites.

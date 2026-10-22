@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import type { ReactNode } from 'react';
 import styles from './auth.module.css';
+import { demoMedia } from '../website/demo-media.js';
 
 export function AuthLayout({
   title,
@@ -30,9 +31,13 @@ export function AuthLayout({
             Bring your wedding plans, your family, and every small detail
             together in one thoughtful place.
           </p>
-          <div className={styles.flower} aria-hidden="true">
-            ✳
-          </div>
+          <img
+            className={styles.storyPhoto}
+            src={demoMedia.planning}
+            alt=""
+            width="512"
+            height="286"
+          />
         </div>
         <p className={styles.footerNote}>
           Made for celebrations. Designed around you.
