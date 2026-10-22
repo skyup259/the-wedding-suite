@@ -16,6 +16,8 @@ See [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) for the proposed feature 
 
 The first feature is detailed in [AUTH_IMPLEMENTATION_PLAN.md](./AUTH_IMPLEMENTATION_PLAN.md): signup creates a wedding/Admin atomically, followed by session login, a private dashboard shell and logout.
 
+Expenses and payments are implemented as M5A at `/expenses`: exact INR costs, split payments, balances, filters, payer reports and revision-safe editing. See [EXPENSES_IMPLEMENTATION.md](./EXPENSES_IMPLEMENTATION.md) for behaviour, retry limits and migration/verification details. Tasks are the next feature.
+
 ## Requirements
 
 - Node.js 24.21.0 (`.nvmrc`) and npm 11.19.0.

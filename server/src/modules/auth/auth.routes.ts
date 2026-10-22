@@ -1,3 +1,5 @@
+import { mountExpenseRoutes } from '../expenses/expenses.routes.js';
+import type { ExpenseService } from '../expenses/expenses.service.js';
 import { mountCampaignRoutes } from '../campaigns/campaigns.routes.js';
 import type { CampaignService } from '../campaigns/campaigns.service.js';
 import { mountInvitationRoutes } from '../invitations/invitations.routes.js';
@@ -36,6 +38,7 @@ export function authRoutes(
   website?: WebsiteService,
   invitations?: InvitationService,
   campaigns?: CampaignService,
+  expenses?: ExpenseService,
 ) {
   const router = Router();
   const allowedOrigins = new Set([options.origin]);
@@ -357,6 +360,17 @@ export function authRoutes(
       envelope(req, res, result);
     });
   }
+  if (expenses)
+    mountExpenseRoutes(router, expenses, async (req) => {
+      const actor = await service.resolve(token(req));
+      if (!actor)
+        throw new HttpError(
+          401,
+          'AUTH_REQUIRED',
+          'Please sign in to continue.',
+        );
+      return actor;
+    });
   if (website)
     mountWebsiteRoutes(router, website, async (req) => {
       const actor = await service.resolve(token(req));

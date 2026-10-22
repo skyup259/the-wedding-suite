@@ -1,3 +1,4 @@
+import type { ExpenseService } from './modules/expenses/expenses.service.js';
 import { campaignWebhook } from './modules/campaigns/campaigns.routes.js';
 import type { CampaignService } from './modules/campaigns/campaigns.service.js';
 import { invitationPublicRoutes } from './modules/invitations/invitations.routes.js';
@@ -27,6 +28,7 @@ export interface AppDependencies {
   website?: WebsiteService;
   invitations?: InvitationService;
   campaigns?: CampaignService;
+  expenses?: ExpenseService;
   resendWebhookSecret?: string;
   auth?: { service: AuthService; options: AuthHttpOptions };
 }
@@ -86,6 +88,7 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.website,
         dependencies.invitations,
         dependencies.campaigns,
+        dependencies.expenses,
       ),
     );
   api.use(apiNotFound);

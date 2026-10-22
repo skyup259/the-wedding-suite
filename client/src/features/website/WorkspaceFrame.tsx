@@ -30,6 +30,7 @@ export function WorkspaceFrame({
           <NavLink to="/website">Website</NavLink>
           <NavLink to="/events">Ceremonies</NavLink>
           <NavLink to="/invitations">Invitations</NavLink>
+          <NavLink to="/expenses">Expenses</NavLink>
           <NavLink to="/team">Team</NavLink>
         </nav>
       </header>

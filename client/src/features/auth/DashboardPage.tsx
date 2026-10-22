@@ -91,7 +91,8 @@ export function DashboardPage() {
         <p>
           <Link to="/website">Manage wedding website</Link> ·{' '}
           <Link to="/events">Manage ceremonies</Link> ·{' '}
-          <Link to="/invitations">Manage family invitations</Link>
+          <Link to="/invitations">Manage family invitations</Link> ·{' '}
+          <Link to="/expenses">Manage expenses</Link>
         </p>
         <p>
           <Link to="/team">

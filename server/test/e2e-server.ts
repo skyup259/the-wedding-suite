@@ -1,3 +1,7 @@
+import { migrateExpenses } from '../src/migrations/006-expenses-payments.js';
+import { ExpenseService } from '../src/modules/expenses/expenses.service.js';
+import { MongoExpenseStore } from '../src/modules/expenses/expenses.repository.js';
+import { MemoryExpenseStore } from './helpers/memory-expense-store.js';
 import { migrateCampaigns } from '../src/migrations/005-invitation-email.js';
 import { CampaignService } from '../src/modules/campaigns/campaigns.service.js';
 import { MongoCampaignStore } from '../src/modules/campaigns/campaigns.repository.js';
@@ -46,6 +50,7 @@ try {
     await migrateWebsite(database.db);
     await migrateInvitations(database.db);
     await migrateCampaigns(database.db);
+    await migrateExpenses(database.db);
   }
   const authStore = database
     ? new MongoAuthStore(database.client, database.db)
@@ -90,6 +95,11 @@ try {
     new OutboxTransport(outbox),
   );
   const app = createApp({
+    expenses: new ExpenseService(
+      database
+        ? new MongoExpenseStore(database.client, database.db)
+        : new MemoryExpenseStore(websiteStore as MemoryWebsiteStore),
+    ),
     logger: createLogger('silent'),
     checkReady: async () => {
       if (database) await database.db.command({ ping: 1 });

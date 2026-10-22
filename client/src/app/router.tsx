@@ -1,4 +1,5 @@
 import {
+  ExpensesRoute,
   EmailBatchesRoute,
   InvitationsRoute,
   PersonalInvitationRoute,
@@ -94,6 +95,14 @@ export const router = createBrowserRouter([
     element: (
       <AccessGate>
         <EmailBatchesRoute />
+      </AccessGate>
+    ),
+  },
+  {
+    path: '/expenses',
+    element: (
+      <AccessGate>
+        <ExpensesRoute />
       </AccessGate>
     ),
   },

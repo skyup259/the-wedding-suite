@@ -97,3 +97,16 @@ export function PreviewRoute() {
     </Pending>
   );
 }
+
+const ExpensesPage = lazy(() =>
+  import('../features/expenses/ExpensesPage.js').then((m) => ({
+    default: m.ExpensesPage,
+  })),
+);
+export function ExpensesRoute() {
+  return (
+    <Pending>
+      <ExpensesPage />
+    </Pending>
+  );
+}

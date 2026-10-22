@@ -38,6 +38,10 @@
     "./campaigns": {
       "types": "./dist/campaigns.d.ts",
       "import": "./dist/campaigns.js"
+    },
+    "./expenses": {
+      "types": "./dist/expenses.d.ts",
+      "import": "./dist/expenses.js"
     }
   },
   "scripts": {

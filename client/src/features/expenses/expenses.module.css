@@ -1,0 +1,200 @@
+.totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0 0.6rem;
+}
+.totals > div {
+  background: #fff;
+  border: 1px solid #e6ded2;
+  border-radius: 14px;
+  padding: 1.2rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.totals strong {
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+  color: #613d24;
+}
+.hint {
+  font-size: 0.9rem;
+  color: #695c50;
+}
+.filters,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.filters {
+  padding: 1.2rem;
+  background: #f3eee5;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  align-items: end;
+}
+.filters label,
+.grid label {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  font-weight: 600;
+}
+.filters input,
+.filters select,
+.grid input,
+.grid select,
+.grid textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #9b8b78;
+  border-radius: 7px;
+  padding: 0.7rem;
+  background: white;
+  color: #30271f;
+  font: inherit;
+}
+.grid textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.heading,
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.heading h2,
+.heading h3 {
+  overflow-wrap: anywhere;
+}
+.records {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.card,
+.editor,
+.report {
+  background: white;
+  border: 1px solid #ddd3c5;
+  border-radius: 14px;
+  padding: 1.4rem;
+  overflow-wrap: anywhere;
+}
+.editor,
+.report {
+  margin-top: 2rem;
+}
+.editor {
+  border-top: 4px solid #9b6b38;
+}
+.editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 1rem 0;
+  min-width: 0;
+}
+.editor legend {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.editor button,
+.filters button,
+.card button,
+.heading button,
+.report button {
+  background: #523622;
+  color: white;
+  border: 1px solid #523622;
+  border-radius: 7px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+.editor button:disabled,
+.filters button:disabled,
+.card button:disabled,
+.heading button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.editor button:focus-visible,
+.filters button:focus-visible,
+.card button:focus-visible,
+.heading button:focus-visible {
+  outline: 3px solid #b76b1c;
+  outline-offset: 3px;
+}
+.amounts {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.amounts dt {
+  color: #695c50;
+  font-size: 0.9rem;
+}
+.amounts dd {
+  margin: 0.3rem 0;
+  font-weight: 700;
+}
+.warning,
+.confirm {
+  padding: 1rem;
+  background: #fff1d8;
+  border-radius: 8px;
+  color: #613d0b;
+}
+.paymentList,
+.report ul {
+  list-style: none;
+  padding: 0;
+}
+.paymentList li,
+.report li {
+  border-bottom: 1px solid #e6ded2;
+  padding: 1rem 0;
+}
+.actions {
+  justify-content: flex-start;
+  margin: 1rem 0;
+}
+.paymentForm {
+  border-top: 1px solid #ddd3c5;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.confirm {
+  margin-top: 1rem;
+}
+.confirm button {
+  margin-right: 0.75rem;
+}
+@media (max-width: 640px) {
+  .totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .totals > div {
+    padding: 0.8rem;
+  }
+  .totals strong {
+    font-size: 1.05rem;
+  }
+  .filters,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card,
+  .editor,
+  .report {
+    padding: 1rem;
+  }
+  .amounts {
+    gap: 1rem;
+  }
+}

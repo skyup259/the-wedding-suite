@@ -1,3 +1,5 @@
+import { ExpenseService } from './modules/expenses/expenses.service.js';
+import { MongoExpenseStore } from './modules/expenses/expenses.repository.js';
 import { CampaignService } from './modules/campaigns/campaigns.service.js';
 import { MongoCampaignStore } from './modules/campaigns/campaigns.repository.js';
 import { InvitationEmailWorker } from './jobs/invitation-email.js';
@@ -101,6 +103,9 @@ async function start(): Promise<void> {
           email.transport,
         );
       return createApp({
+        expenses: new ExpenseService(
+          new MongoExpenseStore(database.client, database.db),
+        ),
         website,
         ...(invitations ? { invitations } : {}),
         ...(campaigns ? { campaigns } : {}),
